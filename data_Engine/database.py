@@ -14,17 +14,6 @@ import os
 from abc import ABCMeta, abstractmethod
 now = datetime.now
 
-def lastTradeDate():
-    """获取最近一个交易日"""
-    today = datetime.now()
-    oneday = timedelta(1)
-    
-    if today.weekday() == 5:
-        today = today -oneday
-    elif today.weekday() == 6:
-        today = today -oneday*2    
-    return today.strftime("%Y%m%d")
-
 class DataBase(object):
     __metaclass__ = ABCMeta
 
@@ -53,7 +42,7 @@ class Mongodb(DataBase):
         client = pymongo.MongoClient(host, port)
         self.db = client[dbname]
      
-    def insert(self,clname,df):
+    def insert(self,df,clname):
         clnames = clname.split(',')
         cl = self.db[name]
         if type(df) == pd.core.frame.DataFrame:
@@ -61,7 +50,7 @@ class Mongodb(DataBase):
             cl.insert_many(data)
             print ("成功下载合约{}的BAR数据".format(clname))
             
-    def update(self,clname,df):
+    def update(self,df,clname):
         '''
         clname  :  str or list
         df   :   dataframe or list
@@ -129,53 +118,56 @@ class Mongodb(DataBase):
             _info[clname] = info
         return pd.DataFrame.from_dict(_info,orient='index')
 
-dbname = 'Stock_D'
-prop = {"symbol":["000001.XSHE","000002.XSHE"],
-        "start_time":datetime.strptime('20170101',"%Y%m%d"),
-        "end_time":datetime.strptime('20170201',"%Y%m%d"),
-        "end_time":datetime.strptime('20180101',"%Y%m%d"),
-        "fields":["open","high","low","close"]}
-
-
-
 class Excel(DataBase):
     def __init__(self,root,dir_name):
         self.root = root
         self.dir_name = dir_name
      
     def path(self,doc_name):
+        os.mkdir(self.root + '\\' + self.dir_name)
         return self.root + '\\' + self.dir_name + '\\' + doc_name + '.xlsx' 
         
-    def insert(self,df,doc_name):
-        path = self.path(doc_name)
-        writer = pd.ExcelWriter(path)
-        df.to_excel(writer,'Sheet1')
-        writer.save()
-        print ('{}.xlsx已写完'.format(doc_name))
+    def insert(self,df,doc_names):
+        names = doc_names.split(',')
+        for i in range(len(names)):
+            path = self.path(names[i])
+            writer = pd.ExcelWriter(path)
+            df[i].to_excel(writer,'Sheet1')
+            writer.save()
+            print ('{}.xlsx已写完'.format(doc_names))
 
     def update(self,df,doc_name):
         '''
         input :
             A DataFrame 
         '''
-        path = self.path(doc_name)
+        names = doc_names.split(',')
+        for i in range(len(names)):
+            path = self.path(names[i])
+            
+            wb = load_workbook(path)
+            ws = wb['Sheet1']
+            
+            [ws.append(r) for r in dataframe_to_rows(df[i], index=True, header=False)]
+            wb.save(path)    
         
-        wb = load_workbook(path)
-        ws = wb['Sheet1']
-        
-        [ws.append(r) for r in dataframe_to_rows(df, index=True, header=False)]
-        wb.save(path)    
         print ('{}.xlsx数据更新完成'.format(doc_name))
 
-    def find(self):
+    def find(self,prop):
+        symbols = prop['symbol'].split(',')
+        fields = prop['fields'].split(',')
+        start_date = prop['start_date']
+        end_date = prop['end_date']
+        
         data = []
-        for x,y,z in os.walk(self.root):
-            doc_name = self.root + '\\' + self.dir_name + '\\' + z
-            data.append(pd.read_csv(doc_name))
+        for s in symbols:   
+            doc_name = self.root + '\\' + self.dir_name + '\\' + s +'.xlsx'
+            dt = pd.read_excel(doc_name).set_index('trade_date')
+            data.append(dt.loc[start_date:end_date,fields])
         return pd.concat(data)
         
     def delete(self):
-        pass
+        pass 
     
 class Hdf5(DataBase):
     def __init__(self,root = r'C:\Users\xinger\Desktop'):
@@ -194,6 +186,7 @@ class Hdf5(DataBase):
     def find(self,doc_name):
         _dir = self.root + '\\' + doc_name
         f = pd.HDFStore(_dir,'r')
+
         data = f['data_d']
         f.close()
         return data
@@ -203,3 +196,9 @@ class Hdf5(DataBase):
 
 dbname = 'stockd'
 mm = Mongodb(dbname=dbname)
+
+
+root = r'C:\Users\xinger\Desktop\ext'
+dir_name = 'stock_daily'
+
+ex = Excel(root , dir_name)

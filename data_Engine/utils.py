@@ -65,23 +65,16 @@ def dataformat(df):
     df.columns = pd.MultiIndex.from_arrays(arrays, names=('symbol', 'fields'))
     return df
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def lastTradeDate():
+    """获取最近一个交易日"""
+    today = datetime.now()
+    oneday = timedelta(1)
+    
+    if today.weekday() == 5:
+        today = today -oneday
+    elif today.weekday() == 6:
+        today = today -oneday*2    
+    return today.strftime("%Y%m%d")
 
 '''
 def parseConfigure():

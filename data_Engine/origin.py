@@ -200,7 +200,9 @@ freq   :  1D 1M 5M 10M 30M 60M
 dataformat  :    
 '''
 
-prop = {'start_date': 20170520, 'end_date': 20170601,'symbol':'000001.SZ,000002.SZ' ,
+
+
+prop = {'start_date': 20170520, 'end_date': 20170601,'symbol':'000001.SZ' ,
    'fields': 'open,close,high,low,volume','dtype':'list','freq':'1M'}
 
 ww = WindData()
