@@ -20,6 +20,11 @@ end = datetime(2018, 1, 22, 0, 0)
 start = '20170101'
 end = '20180101'
 
+def create_df(n_date = 100, n_code = 300,):
+    date = pd.date_range('2012-01-01',periods=n_date)
+    df1 = list(map(lambda x:pd.DataFrame({"code":str(60000+x),'date':date,'open':np.random.randn(n_date),'high':np.random.randn(n_date),'low':np.random.randn(n_date),'close':np.random.randn(n_date),'volume':np.random.randn(n_date),'ret':np.random.randn(n_date),'amt':np.random.randn(n_date)}),range(n_code)))
+    df = pd.concat(df1)
+    return df
 
 def float_or_string(value):
     try:
