@@ -4,45 +4,19 @@ Created on Thu Mar  1 09:45:44 2018
 
 @author: sicher
 """
-
-
-
-prop = {'start_date': 20170520,
-        'end_date': 20170601,
-        'symbol':symbol ,
-        'fields': 'open,close,high,low,volume',
-        'self.dtype':'list',
-        'freq':'1M'}
-
-
-conf = {}
-# wind or jaqs
-conf['origin'] = 'wind'
-#mongodb excel hdf5
-conf['database'] = 'mongodb'
-#['basic','daily','minu','finance']
-conf['data_type'] = 'daily'
-conf['prop'] = prop
-
-data = do.getdailydata(prop)
-
-db.update(data,symbols)
-    
-db.insert(data,symbols)
-db.find()
-
-db.find(prop)
-
+from origin import *
+from database import *
 #完全封装版
 class data_engine(object):
     def __init__(self,conf):
         origin = conf['origin']
         database = conf['database']
+        root = conf['root']
         dbname = origin + '_' + conf['dtype'] + '_data'
         self.dtype = conf['dtype']
         #['basic','daily','minu','finance']
         self.prop = conf['prop']
-        index = ['all','SZ50','HS300','ZZ500','SME','GEM']
+        index = ['ALL','SZ50','HS300','ZZ500','SME','GEM']
         
         if origin == 'wind':
             self.do = WindData()
@@ -52,7 +26,10 @@ class data_engine(object):
         if database == 'mongodb':
             self.db = Mongodb(dbname = dbname)
         elif database == 'excel':
-            self.db = Excel(dbname = dbname)
+            self.db = Excel(root,dbname)
+            
+        if self.prop['symbol'] in index:
+           self.prop['symbol'] = self.do.get_index_cons('ALL')
         
     def update(self):
         if self.dtype == 'daily':

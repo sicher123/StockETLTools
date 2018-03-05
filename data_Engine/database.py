@@ -124,24 +124,25 @@ class Excel(DataBase):
         self.dir_name = dir_name
      
     def path(self,doc_name):
-        os.mkdir(self.root + '\\' + self.dir_name)
+        if not os.path.exists(self.root + '\\' + self.dir_name):
+            os.mkdir(self.root + '\\' + self.dir_name)
         return self.root + '\\' + self.dir_name + '\\' + doc_name + '.xlsx' 
         
-    def insert(self,df,doc_names):
-        names = doc_names.split(',')
+    def insert(self,df,names):
+        if type(names) == str:
+            names = names.split(',')
         for i in range(len(names)):
             path = self.path(names[i])
-            writer = pd.ExcelWriter(path)
-            df[i].to_excel(writer,'Sheet1')
-            writer.save()
-            print ('{}.xlsx已写完'.format(doc_names))
+            df[i].to_excel(path)
+            print ('{}.xlsx已写完'.format(names[i]))
 
-    def update(self,df,doc_name):
+    def update(self,df,names):
         '''
         input :
             A DataFrame 
         '''
-        names = doc_names.split(',')
+        if type(names) == str:
+            names = names.split(',')
         for i in range(len(names)):
             path = self.path(names[i])
             
@@ -193,12 +194,3 @@ class Hdf5(DataBase):
         
     def delete(self):
         pass
-
-dbname = 'stockd'
-mm = Mongodb(dbname=dbname)
-
-
-root = r'C:\Users\xinger\Desktop\ext'
-dir_name = 'stock_daily'
-
-ex = Excel(root , dir_name)
