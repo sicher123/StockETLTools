@@ -91,12 +91,15 @@ class WindData(DataOrigin):
                        freq : 1                     ( must in 1,3,5,10,15,30,60)
         '''
         symbol = prop['symbol']
-        start_time = str(prop['start_time'])
-        end_time = str(['end_time'])
+        start_date = prop['start_date']
+        end_date = prop['end_date']
         fields = prop['fields']
-        freq = prop['freq']
+        freq = prop['freq'][:1]
         
-        d = self.w.wsi(symbol, fields, start_time, end_time, "BarSize={};Fill=Previous;PriceAdj=F".format(barsize))
+        start_time = start_date + " 09:00:00"
+        end_time = end_date + " 15:00:00"
+        
+        d = self.w.wsi(symbol, fields, start_time, end_time, "BarSize={};Fill=Previous;PriceAdj=F".format(freq))
         if d.ErrorCode == 0:
             fields = [f.lower() for f in d.Fields]
             data = pd.DataFrame(data = d.Data,index=fields,columns=d.Times).T.reset_index()
@@ -160,10 +163,11 @@ class JaqsData(DataOrigin):
             print ('error',msg)
             
     #------------------------------------------------------------------------      
-    def get_intra_data(self,prop):
+    def get_min_data(self,prop):
         symbol = prop['symbol']
         fields = prop['fields']
         freq = prop['freq']
+        
         assert freq in ("15S", "30S", "1M", "5M", "15M", "1D", "1W",'1m'), "请输入正确的分钟级别参数"
 
         trade_dates = self.get_date_data(prop,dtype = 'list')
