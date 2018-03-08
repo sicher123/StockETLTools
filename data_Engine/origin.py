@@ -37,9 +37,9 @@ class WindData(DataOrigin):
         else:
             print ("WIND API connected failed")
         
-    def get_symbol_name(self,sector,dtype = 'list'):
+    def get_index_cons(self,sector,dtype = 'list'):
         sectorID = {}
-        sectorID['all'] = 'a001010100000000'     #u"全部A股"
+        sectorID['ALL'] = 'a001010100000000'     #u"全部A股"
         sectorID['zxb'] = 'a001010400000000'     #u"中小板"
         sectorID['cyb'] = 'a001010r00000000'    #u"创业板 "
         sectorID['hs300'] = 'a001030201000000'     #u'沪深300'
@@ -122,11 +122,24 @@ class JaqsData(DataOrigin):
             filter="inst_type=1&status=1&symbol=",
             data_format='pandas')
         if msg == '0,':
-            data = df[(True-df['market'].isin(['HKH','HKS','JZ']))]
+            data = df[~df['market'].isin(['HKH','HKS','JZ'])]
             if dtype == 'dataframe':
                 return data
+            if dtype == 'list':
+                return list(data['symbol'])
         else:
             print ('error',msg)
+            
+    def get_index_cons(self,index):
+        if index =='ALL':
+            return self.get_basic_data(dtype='list')
+        else:
+            df, msg = self.api.query(
+                  view="lb.indexCons",
+                  fields="",
+                  filter="index_code={}&start_date={}&end_date={}".format(index,str_now,str_now),
+                  data_format='pandas')
+            retrun
     #------------------------------------------------------------------------
     def get_date_data(self,prop,dtype = 'list'):
         start_date = prop['start_date']
@@ -149,18 +162,19 @@ class JaqsData(DataOrigin):
     #------------------------------------------------------------------------
     def get_daily_data(self,prop):
         
-        symbol = prop['symbol']
+        symbols = prop['symbol']
         start_date = prop['start_date']
         end_date = prop['end_date']
         fields = prop['fields']
+        def func(symbol):
+            df, msg = self.api.daily(symbol = symbol,start_date = start_date, end_date = end_date,fields = fields,adjust_mode="post")
         
-        df, msg = self.api.daily(symbol = symbol,start_date = start_date, end_date = end_date,fields = fields,adjust_mode="post")
-        
-        if msg == '0,':
-            #data = data.drop(['symbol','date'],axis =1)
-            return df
-        else:
-            print ('error',msg)
+            if msg == '0,':
+                #data = data.drop(['symbol','date'],axis =1)
+                return df
+            else:
+                print ('error',msg)
+        return [func(symbol) for symbol in symbols]
             
     #------------------------------------------------------------------------      
     def get_min_data(self,prop):
@@ -205,7 +219,7 @@ dataformat  :
 '''
 
 
-
+'''
 prop = {'start_date': 20170520, 'end_date': 20170601,'symbol':'000001.SZ' ,
    'fields': 'open,close,high,low,volume','dtype':'list','freq':'1M'}
 
@@ -216,4 +230,4 @@ m_prop = {'start_time': '20171201 09:00:00', 'end_time': '20180101 09:00:00', 's
    'fields': 'open,close,high,low,volume',}
 
 js = JaqsData()
-
+'''
