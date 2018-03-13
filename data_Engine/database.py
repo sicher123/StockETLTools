@@ -44,7 +44,9 @@ class Mongodb(DataBase):
      
     def insert(self,df,clname):
         clnames = clname.split(',')
-        cl = self.db[name]
+        if type(clname) == str:
+            name = clname
+            cl = self.db[name]
         if type(df) == pd.core.frame.DataFrame:
             data = df.to_dict(orient='records')
             cl.insert_many(data)

@@ -61,10 +61,10 @@ def dataformat(df):
     Input : DataFrame    concat-axis = 0   
     '''
     
-    num = df.columns.unique()
+    num = len(df.columns.unique())
     symbol = []
-    for i in df['symbol'][:num].T.values[0]:
-         symbol += list(i)
+    symbol = list(df['symbol'].values[0])*num
+    symbol.sort()
     
     arrays = [symbol,list(df.columns)]
     df.columns = pd.MultiIndex.from_arrays(arrays, names=('symbol', 'fields'))

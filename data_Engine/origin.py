@@ -53,6 +53,8 @@ class WindData(DataOrigin):
             data = d.Data[1]
         elif dtype == 'dataframe':
             data = pd.DataFrame(data = d.Data,index = d.Fields).T
+        elif dtype == 'str':
+            data = ",".join(d.Data[1])
         else:
             print ('dtype must be list or dataframe')
         return data
@@ -166,15 +168,13 @@ class JaqsData(DataOrigin):
         start_date = prop['start_date']
         end_date = prop['end_date']
         fields = prop['fields']
-        def func(symbol):
-            df, msg = self.api.daily(symbol = symbol,start_date = start_date, end_date = end_date,fields = fields,adjust_mode="post")
-        
-            if msg == '0,':
-                #data = data.drop(['symbol','date'],axis =1)
-                return df
-            else:
-                print ('error',msg)
-        return [func(symbol) for symbol in symbols]
+        df, msg = self.api.daily(symbol = symbols,start_date = start_date, end_date = end_date,fields = fields,adjust_mode="post")
+    
+        if msg == '0,':
+            #data = data.drop(['symbol','date'],axis =1)
+            return df
+        else:
+            print ('error',msg)
             
     #------------------------------------------------------------------------      
     def get_min_data(self,prop):
