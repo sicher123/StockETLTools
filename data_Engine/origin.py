@@ -4,7 +4,7 @@ Created on Tue Jan 16 14:37:32 2018
 
 @author: xinger
 """
-from init import *
+from base import *
 
 class DataOrigin(object):
     __metaclass__ = ABCMeta
@@ -205,8 +205,6 @@ class JaqsData(DataOrigin):
         else:
             print (msg)
             
-
-
 
 '''
 prop : dict

@@ -92,7 +92,6 @@ class Mongodb(DataBase):
         def func(symbol):
             cs = self.db[symbol].find({'datetime':{'$gt':start_time,'$lt':end_time}},flt)
             data = pd.DataFrame(list(cs))
-            data.columns
             data['symbol'] = symbol
             return data
         
