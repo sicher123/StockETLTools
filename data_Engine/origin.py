@@ -4,6 +4,8 @@ Created on Tue Jan 16 14:37:32 2018
 
 @author: xinger
 """
+
+
 from base import *
 
 class DataOrigin(object):
@@ -27,6 +29,8 @@ class WindData(DataOrigin):
     def __init__(self,):
         self.data = ''
         self.signinWind()
+        self.error_info = pd.read_excel(r'info.xlsx',sheetname = 'wind_error').set_index('key').to_dict()['value']
+        
         
     def signinWind(self):
         """登录wind"""
@@ -40,9 +44,9 @@ class WindData(DataOrigin):
     def get_index_cons(self,sector,dtype = 'list'):
         sectorID = {}
         sectorID['ALL'] = 'a001010100000000'     #u"全部A股"
-        sectorID['zxb'] = 'a001010400000000'     #u"中小板"
-        sectorID['cyb'] = 'a001010r00000000'    #u"创业板 "
-        sectorID['hs300'] = 'a001030201000000'     #u'沪深300'
+        sectorID['SME'] = 'a001010400000000'     #u"中小板"
+        sectorID['GEM'] = 'a001010r00000000'    #u"创业板 "
+        sectorID['HS300'] = 'a001030201000000'     #u'沪深300'
         sectorID['zz500'] = 'a001030208000000'     #u'中证500'
         
         sector_id = sectorID[sector]
@@ -60,11 +64,14 @@ class WindData(DataOrigin):
         return data
         
     def get_daily_data(self,prop):
-        symbols = prop['symbol']
         start_time = str(prop['start_date'])
         end_time = str(prop['end_date'])
         fields = prop['fields']
-        symbols = symbols.split(',')
+        
+        if prop.get('index'):
+            symbols = self.get_index_cons(prop.get('index'))
+        else:
+            symbols = prop['symbol']
         
         def func(symbol):
             d = w.wsd(symbol,fields,start_time,end_time,"rptYear=2014，Fill=Previous;PriceAdj=F")
@@ -76,14 +83,14 @@ class WindData(DataOrigin):
                 data.index.name = 'trade_date'
                 return data.reset_index()
             else:
-                print ('error',d.ErrorCode)
+                print ('error',self.error_info[d.ErrorCode])
                 
         d_list = [func(symbol) for symbol in symbols]
         if prop['dtype'] == 'list':
             return d_list
         if prop['dtype'] == 'dataframe':
             return pd.concat(d_list)
-        
+    
     def get_min_data(self,prop):
         '''
         prop : dict   example
@@ -92,11 +99,15 @@ class WindData(DataOrigin):
                        fields : 'open,high,low,close'
                        freq : 1                     ( must in 1,3,5,10,15,30,60)
         '''
-        symbol = prop['symbol']
-        start_date = prop['start_date']
-        end_date = prop['end_date']
+        start_date = str(prop['start_date'])
+        end_date = str(prop['end_date'])
         fields = prop['fields']
         freq = prop['freq'][:1]
+        
+        if prop.get('index'):
+            symbols = self.get_index_cons(prop.get('index'))
+        else:
+            symbols = prop['symbol']
         
         start_time = start_date + " 09:00:00"
         end_time = end_date + " 15:00:00"
@@ -107,8 +118,28 @@ class WindData(DataOrigin):
             data = pd.DataFrame(data = d.Data,index=fields,columns=d.Times).T.reset_index()
             return data.rename(columns = {'index':'datetime'})
         else:
-            print ('error',d.ErrorCode)
+            print ('error',self.error_info[d.ErrorCode])
  
+    def get_cross_data(self,prop):
+        fields = prop['fields']
+        end_date = str(prop['end_date'])
+        
+        if prop.get('index'):
+            symbols = self.get_index_cons(prop.get('index'))
+        else:
+            symbols = prop['symbol']
+            
+        def func(s):
+            d = w.wss(s,"open,high,low,close,volume,amt,pct_chg,swing,vwap,turn","tradeDate={};priceAdj=F;cycle=D".format(end_date))
+            if d.ErrorCode == 0:
+                data = pd.DataFrame(data = d.Data,index=d.Fields,columns=d.Times).T.reset_index()
+                return data
+            else:
+                print (self.error_info[d.ErrorCode])
+                
+        df = pd.concat([func(s) for s in symbol])
+        return df
+        
 class JaqsData(DataOrigin):
     def __init__(self):
         name = "13243828068"
@@ -163,11 +194,15 @@ class JaqsData(DataOrigin):
             
     #------------------------------------------------------------------------
     def get_daily_data(self,prop):
-        
-        symbols = prop['symbol']
         start_date = prop['start_date']
         end_date = prop['end_date']
         fields = prop['fields']
+        
+        if prop.get('index'):
+            symbols = self.get_index_cons(prop.get('index'))
+        else:
+            symbols = prop['symbol']
+        
         df, msg = self.api.daily(symbol = symbols,start_date = start_date, end_date = end_date,fields = fields,adjust_mode="post")
     
         if msg == '0,':
@@ -178,9 +213,13 @@ class JaqsData(DataOrigin):
             
     #------------------------------------------------------------------------      
     def get_min_data(self,prop):
-        symbol = prop['symbol']
         fields = prop['fields']
         freq = prop['freq']
+        
+        if prop.get('index'):
+            symbols = self.get_index_cons(prop.get('index'))
+        else:
+            symbols = prop['symbol']
         
         assert freq in ("15S", "30S", "1M", "5M", "15M", "1D", "1W",'1m'), "请输入正确的分钟级别参数"
 

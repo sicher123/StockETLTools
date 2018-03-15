@@ -6,9 +6,12 @@ Created on Thu Mar  1 09:45:44 2018
 """
 from origin import *
 from database import *
-#完全封装版
+
 class data_engine(object):
     def __init__(self,conf):
+        '''
+        symbol str  ->  list
+        '''
         origin = conf['origin']
         database = conf['database']
         root = conf['root']
@@ -16,8 +19,7 @@ class data_engine(object):
         self.dtype = conf['dtype']
         #['basic','daily','minu','finance']
         self.prop = conf['prop']
-        index = ['ALL','SZ50','HS300','ZZ500','SME','GEM']
-        
+
         if origin == 'wind':
             self.do = WindData()
         elif origin == 'jaqs':
@@ -28,16 +30,18 @@ class data_engine(object):
         elif database == 'excel':
             self.db = Excel(root,dbname)
             
-        if self.prop['symbol'] in index:
-           self.prop['symbol'] = self.do.get_index_cons('ALL')
+        if self.prop.get('index'):
+           self.symbol = self.do.get_index_cons(self.prop.get('index'))
+        else:
+            self.symbol = self.prop['symbol'].split(',')
         
     def update(self):
         if self.dtype == 'daily':
             df = self.do.get_daily_data(self.prop)
-            self.db.update(df,self.prop['symbol'])
+            self.db.update(df,self.symbol)
         if self.dtype == 'min':
             df = self.do.get_daily_data(self.prop)
-            self.db.update(df,self.prop['symbol'])
+            self.db.update(df,self.symbol)
         if self.dtype == 'finance':
             df = self.do.get_finance_data(self.prop)
             self.db.update(df,prop['fnc_clname'])
@@ -45,10 +49,10 @@ class data_engine(object):
     def insert(self):
         if self.dtype == 'daily':   
             df = self.do.get_daily_data(self.prop)
-            self.db.insert(df,self.prop['symbol'])
+            self.db.insert(df,self.symbol)
         if self.dtype == 'min':
             df = self.do.get_daily_data(self.prop)
-            self.db.insert(df,self.prop['symbol'])
+            self.db.insert(df,self.symbol)
         if self.dtype == 'finance':
             df = self.do.get_finance_data(self.prop)
             self.db.insert(df,prop['fnc_clname'])

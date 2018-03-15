@@ -13,7 +13,8 @@ prop = {'start_date': 20170520,
         'symbol':'ALL' ,
         'fields': 'open,close,high,low,volume',
         'dtype':'list',
-        'freq':'1M'}
+        'freq':'1M',
+         'index':'ALL'}
 
 
 
