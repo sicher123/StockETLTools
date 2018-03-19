@@ -199,7 +199,7 @@ class JaqsData(DataOrigin):
         fields = prop['fields']
         
         if prop.get('index'):
-            symbols = self.get_index_cons(prop.get('index'))
+            symbols = ','.join(self.get_index_cons(prop.get('index')))
         else:
             symbols = prop['symbol']
         
@@ -244,7 +244,10 @@ class JaqsData(DataOrigin):
         else:
             print (msg)
             
-
+class get_from_local(DataOrigin):
+    def __init__(self,db_info):
+        pass
+    
 '''
 prop : dict
 origin  :  wind,jaqs
@@ -256,10 +259,10 @@ dataformat  :
 '''
 
 
-'''
-prop = {'start_date': 20170520, 'end_date': 20170601,'symbol':'000001.SZ' ,
-   'fields': 'open,close,high,low,volume','dtype':'list','freq':'1M'}
 
+prop = {'start_date': 20170520, 'end_date': 20170601,'symbol':'000001.SZ' ,'index':'ALL',
+   'fields': 'open,close,high,low,volume','dtype':'list','freq':'1M'}
+'''
 ww = WindData()
 
 
