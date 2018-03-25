@@ -1,6 +1,29 @@
 # data_service demo
-## 1 概述
-金融数据分析，各类数据源繁多，且调取方法与数据格式也都不同，不同使用者需求也不同。本项目将各种不同的数据源统一接口，输出标准化的数据格式。使用者不需要了解数据获取与规整化的繁杂过程，可以简单地获取到自己需要的数据。目前支持的数据源与数据库有：
+## 1 quickstart
+```
+prop = {'start_date': 20170520,
+        'end_date': 20170601,
+        'symbol':'ALL' ,
+        'fields': 'open,close,high,low,volume',
+        'dtype':'list',
+        'freq':'1M',
+        'index':'ALL'}
+        
+conf = {}
+conf['origin'] = 'wind'
+conf['database'] = 'excel'
+conf['data_form'] = 'daily'
+conf['prop'] = prop
+conf['dtype'] = 'daily'
+conf['root'] = r'C:\Users\siche\Desktop\ext'
+
+from engine import data_engine
+de = data_engine(conf)
+de.insert()
+```
+## 2 概述
+金融数据的数据源繁多，其接口与数据格式也都不同，不同使用者需求也不同，往往需要花费很多资源去维护。
+本项目统一了接口与数据格式，使得使用者只需要关注其需要的数据而不必在意技术细节。目前支持的数据源与数据库有：
 
 | 数据源       | 支持数据    |   是否收费  |说明  |
 | --------   | -----:   |  -----:   |:----: |
@@ -15,7 +38,7 @@
 | hdf5   |     |  大批量数据，仅用于研究 |
 | mongodb |     |  大批量数据的研究与生产 |
 
-## 2 功能
+## 3 功能
 根据需求划分不同等级的功能
 ### 2.1 将数据存储到本地文件
 在config.py修改参数并执行，即可对数据进行增删改查操作。 
