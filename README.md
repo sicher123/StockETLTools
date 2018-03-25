@@ -5,8 +5,8 @@
 | 数据源       | 支持数据    |  说明  |
 | --------   | -----:   | :----: |
 | Wind       | 免费版支持基础类型数据，机构版支持全类型数据     |  需要先安装wind量化接口，安装方法见 http://www.dajiangzhang.com/document     |
-| Jaqs | 股票分钟/日行情,小部分财务数据    |   需要安装jaqs包    |
-
+| Tushare-Pro | 股票分钟/日行情,小部分财务数据    |   需要安装jaqs包 ,见https://github.com/quantOS-org/JAQS   |
+| choice | 全市场数据   |   需要购买东方财富数据,并安装接口，见http://quantapi.eastmoney.com/   |
 
 | 数据库(存储方案)       |说明  |  使用场景  |
 | --------   | ----: | :----: |
