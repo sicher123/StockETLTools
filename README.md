@@ -2,11 +2,11 @@
 ## 1 概述
 金融数据分析，各类数据源繁多，且调取方法与数据格式也都不同，不同使用者需求也不同。本项目将各种不同的数据源统一接口，输出标准化的数据格式。使用者不需要了解数据获取与规整化的繁杂过程，可以简单地获取到自己需要的数据。目前支持的数据源与数据库有：
 
-| 数据源       | 支持数据    |  说明  |
-| --------   | -----:   | :----: |
-| Wind       | 免费版支持基础类型数据，机构版支持全类型数据     |  需要先安装wind量化接口，安装方法见 http://www.dajiangzhang.com/document     |
-| Tushare-Pro | 股票分钟/日行情,小部分财务数据    |   需要安装jaqs包 ,见https://github.com/quantOS-org/JAQS   |
-| choice | 全市场数据   |   需要购买东方财富数据,并安装接口，见http://quantapi.eastmoney.com/   |
+| 数据源       | 支持数据    |   是否收费  |说明  |
+| --------   | -----:   |  -----:   |:----: |
+| Tushare-Pro | 股票分钟行情/日行情/财务数据    | 免费  |需要安装jaqs包 ,见https://github.com/quantOS-org/JAQS   |
+| Wind       | 免费版支持基础行情数据，机构版支持金融市场全数据 | 基础版免费/机构版收费   |  需要先安装wind量化接口，安装方法见 http://www.dajiangzhang.com/document     |
+| choice | 全市场数据   | 付费 | 需要安装东方财富choice接口，见http://quantapi.eastmoney.com/   |
 
 | 数据库(存储方案)       |说明  |  使用场景  |
 | --------   | ----: | :----: |
