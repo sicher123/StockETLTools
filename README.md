@@ -1,5 +1,5 @@
 # data_service demo
-## 1 quickstart
+## 1 Quickstart
 ```
 prop = {'start_date': 20170520,
         'end_date': 20170601,
@@ -17,7 +17,7 @@ conf['prop'] = prop
 conf['dtype'] = 'daily'
 conf['root'] = r'C:\Users\siche\Desktop\ext'
 
-from engine import data_engine
+from data_service.engine import data_engine
 de = data_engine(conf)
 de.insert()
 ```
