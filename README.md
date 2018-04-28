@@ -29,9 +29,9 @@ de.insert()
 
 | 数据源       | 支持数据    |   是否收费  |说明  |
 | --------   | -----:   |  -----:   |:----: |
-| Tushare-Pro | 股票分钟行情/日行情/财务数据    | 免费  |需要安装jaqs包 ,见https://github.com/quantOS-org/JAQS   |
+| Tushare-Pro | 股票分钟行情/日行情/财务数据    | 免费  |需要安装jaqs包 ,见http://tushare.org/pro/usage.html   |
 | Wind       | 免费版支持基础行情数据，机构版支持金融市场全数据 | 基础版免费/机构版收费   |  需要先安装wind量化接口，安装方法见 http://www.dajiangzhang.com/document     |
-| choice | 全市场数据   | 付费 | 需要安装东方财富choice接口，见http://quantapi.eastmoney.com/   |
+| choice | 全市场数据   | 付费 | 需要安装东方财富choice接口，见http://quantapi.eastmoney.com   |
 
 | 数据库(存储方案)       |说明  |  使用场景  |
 | --------   | ----: | :----: |
