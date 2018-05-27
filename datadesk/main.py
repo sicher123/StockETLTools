@@ -14,7 +14,7 @@ def update_all(fp):
     h5 = hdf5_sync(fp,dvp,dsp) 
     sql = sql_sync(fp,dvp,dsp)
     try:
-		h5.create_daily()
+        h5.create_daily()
         h5.update_daily()
     except:
         raise ValueError('Error when update daily')
@@ -23,6 +23,6 @@ def update_all(fp):
         sql.update_data()
     except:
         raise ValueError('Error when update lb data')
-		
+        
 
-update_all()
+update_all(fp)
