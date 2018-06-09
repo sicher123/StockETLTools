@@ -4,81 +4,32 @@ Created on Wed May  9 22:34:50 2018
 
 @author: xinger
 """
-#dict = [daily_field,indi_field,factors,ajd_field]
+import pandas as pd
+from datetime import datetime
+import openpyxl
 
-daily_field = ['close', 'trade_status','turnover', 'volume', 'open', 'high', 'low', 'vwap']
-             
-indi_field =  ['pcf_ncf', 'pb', 'free_share', 'pe',
-               'total_share', 'total_mv', 'limit_status', 'ps', 'ncf_oper_lyr',
-               'ps_ttm', 'float_share', 'net_assets', 'pcf_ocfttm', 'float_mv',
-               'pe_ttm', 'oper_rev_lyr', 'pcf_ncfttm', 'pcf_ocf',
-               'free_turnover_ratio', 'oper_rev_ttm', 'ncf_oper_ttm',
-               'np_parent_comp_ttm', 'price_div_dps', 'np_parent_comp_lyr',
-               'turnover_ratio']
+daily_db = ['dbo.ASHAREEODDERIVATIVEINDICATOR','dbo.ASHAREEODPRICES','dbo.AINDEXEODPRICES']
+db_config = {'host': "172.16.100.7",
+             'user': "bigfish01",
+             'password': "bigfish01@0514"}
+symbol = ''
+start_date = 20180501
+today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
+end_date = today
 
-adj_field = ['close_adj', 'high_adj', 'low_adj', 'open_adj', 'vwap_adj']
+def set_config():
+    data = pd.read_excel(r'datadesk/config/name_map.xlsx')
+    dic = {}
+    for i in daily_db:
+        dic[i] = {}
+        fields = data['windColumnName'][data['windTableName'] == i].values
+        dic[i]['fields'] = ','.join(set(list(fields) + ['S_INFO_WINDCODE', 'TRADE_DT','OBJECT_ID']))
+        dic[i]['db_config'] = db_config
+        dic[i]['start_date'] = start_date
+        dic[i]['end_date'] = end_date
+        dic[i]['symbol'] = ''
+        dic[i]['origin'] = 'MSSqlOrigin'
+        dic[i]['DATE_NAME'] = 'TRADE_DT'
+    return dic
 
-factors  =    ['MFI', 'MAWVAD', 'NVI', 'RSTR24', 'TotalAssetsTRate', 'TEMA5',
-               'BearPower', 'NOCFToOperatingNI', 'VDEA', 'GREC', 'Hurst', 'EPS',
-               'REVS10', 'BondsPayableToAsset', 'AccountsPayablesTRate', 'AD20',
-               'SBM', 'FinancingCashGrowRate', 'VEMA5', 'PLRC12', 'ASSI', 'ACCA',
-               'TotalProfitGrowRate', 'BullPower', 'OBV', 'CFO2EV', 'DDNBT',
-               'EMA12', 'Ulcer5', 'ETP5', 'MA10', 'VSTD20', 'CashRateOfSales',
-               'BIAS60', 'LCAP', 'BBIC', 'ATR6', 'EMA10', 'EMA120', 'TOBT',
-               'VEMA12', 'BR', 'BIAS10', 'CoppockCurve', 'BBI', 'PE', 'JDQS20',
-               'ILLIQUIDITY', 'PS', 'EMA26', 'ChandeSU', 'FixedAssetsTRate',
-               'RSI', 'MassIndex', 'AccountsPayablesTDays', 'KDJ_J', 'EMA20',
-               'FixAssetRatio', 'TEMA10', 'DAVOL20', 'EMV6', 'EMV14', 'BIAS20',
-               'MA10Close', 'OperatingProfitRatio', 'NPToTOR', 'SwingIndex',
-               'VDIFF', 'ARC', 'LFLO', 'VOSC', 'TVSTD6', 'CashToCurrentLiability',
-               'HSIGMA', 'SaleServiceCashToOR', 'ARBR', 'DEGM', 'plusDI', 'ROE5',
-               'FiftyTwoWeekHigh', 'VOL240', 'Volatility', 'SUE', 'ARTRate',
-               'TotalAssetGrowRate', 'EquityToAsset', 'NetProfitRatio', 'CCI5',
-               'DebtEquityRatio', 'BollUp', 'BLEV', 'ETOP', 'REVS20', 'BIAS5',
-               'DownRVI', 'CurrentAssetsRatio', 'SalesCostRatio', 'TRIX5',
-               'ChaikinOscillator', 'KlingerOscillator', 'FEARNG', 'WVAD',
-               'Skewness', 'PVT', 'MA10RegressCoeff6', 'TVSTD20', 'UOS', 'DIZ',
-               'DVRAT', 'TaxRatio', 'minusDI', 'MA120', 'VOL60',
-               'OperatingProfitToTOR', 'CMRA', 'ADTM', 'VEMA26', 'PVT6', 'REC',
-               'OBV6', 'DilutedEPS', 'VMACD', 'CR20', 'ROC6',
-               'InvestCashGrowRate', 'AR', 'DDNSR', 'DIFF', 'EARNMOM', 'Elder',
-               'PSY', 'GSREV', 'DAREV', 'KDJ_D', 'ChaikinVolatility',
-               'NonCurrentAssetsRatio', 'DDI', 'APBMA', 'GrossIncomeRatio',
-               'EBITToTOR', 'DAREC', 'EMA5', 'ADX', 'SFY12P', 'VOL5', 'SUOI',
-               'CTP5', 'ChandeSD', 'ASI', 'DDNCR', 'ROE', 'FY12P', 'CCI88',
-               'MACD', 'MA5', 'DHILO', 'TotalProfitCostRatio',
-               'OperCashInToCurrentLiability', 'BackwardADJ', 'UpRVI', 'TA2EV',
-               'VROC6', 'DebtsAssetRatio', 'PVT12', 'BollDown', 'VROC12', 'MTM',
-               'RVI', 'AD6', 'MoneyFlow20', 'DEA', 'VOL10', 'PCF',
-               'OperatingExpenseRate', 'LongTermDebtToAsset', 'Aroon',
-               'InventoryTDays', 'VSTD10', 'InventoryTRate', 'VR', 'AroonUp',
-               'MLEV', 'FSALESG', 'KDJ_K', 'CTOP', 'ACD6', 'ROA5', 'TVMA20',
-               'AroonDown', 'CMO', 'DAVOL5', 'RSTR12', 'ROA',
-               'IntangibleAssetRatio', 'VOL20', 'ARTDays', 'AdminiExpenseRate',
-               'MA60', 'GREV', 'RC12', 'LongDebtToAsset', 'CCI10', 'EMA60',
-               'REVS5', 'OperatingProfitGrowRate', 'SRMI', 'NetAssetGrowRate',
-               'MA10RegressCoeff12', 'FinancialExpenseRate', 'RC24', 'ROC20',
-               'ATR14', 'AD', 'CurrentAssetsTRate', 'DASREV', 'DIF', 'CCI20',
-               'LongDebtToWorkingCapital', 'TRIX10', 'ACD20', 'EGRO', 'HBETA',
-               'NPParentCompanyGrowRate', 'DAVOL10', 'EquityFixedAssetRatio',
-               'EquityTRate', 'OperatingRevenueGrowRate', 'PB', 'OBV20',
-               'NetProfitGrowRate', 'PVI', 'STM', 'Ulcer10', 'VEMA10', 'ADXR',
-               'VOL120', 'QuickRatio', 'OperCashGrowRate', 'MA20', 'CurrentRatio',
-               'DBCD', 'MTMMA', 'PLRC6', 'TVMA6']
-
-def set_config(start_date = 20100101,end_date=20180410):
-    addr = 'tcp://192.168.0.102:23000'
-    #addr="tcp://data.tushare.org:8910"
-    name = "13243828068"
-    passwd = 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVfdGltZSI6IjE1MTUwNDk5MzI2MDAiLCJpc3MiOiJhdXRoMCIsImlkIjoiMTMyNDM4MjgwNjgifQ.KpmnMkuO7ApTWvBAwgvHwWDkmoasBIdQHl2gQJVmqIA'
-    
-    ds_props = {'remote.data.address':addr,
-                'remote.data.username':name,
-                'remote.data.password':passwd}
-
-    symbol = '600000.SH,000002.SZ'
-    _fields = ['close']
-    dv_props = {'start_date': start_date, 'end_date': end_date, 'symbol': symbol,'fields': ','.join(_fields),
-                'freq': 1,'daily_field':daily_field,'indi_field':indi_field,'factors':factors,'adj_field':adj_field}
-    return dv_props,ds_props
 
