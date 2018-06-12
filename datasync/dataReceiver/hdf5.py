@@ -27,6 +27,16 @@ class DailyDB(LocalFileSystem):
         super(DailyDB, self).__init__(fp)
         self.path = self.get_db(dbname)
 
+    def get_info(self,field):
+        with h5py.File(self.path + '//dbInfo.h5') as file:
+            data = file.attrs[field]
+            return data
+
+    def update_info(self,field):
+        today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
+        file = h5py.File(self.path + '//dbInfo.h5')
+        file.attrs[field] = today
+
     def get_file(self,colname):
         return h5py.File(self.path + '//' + colname + '.hd5')
 
@@ -61,27 +71,6 @@ class DailyDB(LocalFileSystem):
                 flag[k] = file[k][:,0]
         return flag
 
-    def _update_flag(self, data, name, h5_obj=None):
-        flag = pd.DataFrame(data).values
-        flag = self._convert_string_array(flag, None)
-        if len(data) == 0:
-            return
-        if h5_obj is None:
-            colname = data.name
-            file = self.get_file(colname)
-            file.create_dataset(name, data=flag,chunks=True, maxshape=(8000, 1),compression="gzip")
-            # file.create_dataset('date_flag', data=flag, maxshape=(8000, 1), chunks=True,compression="gzip")
-        elif name in h5_obj.keys():
-            num = len(flag)
-            dset = h5_obj[name]
-            new_shape = (dset.shape[0] + num, dset.shape[1])
-            dset.resize(new_shape)
-            dset[-num:, :] = flag.astype(dset.dtype)
-        else:
-            h5_obj.create_dataset(name, data=flag, maxshape=(8000, 1),chunks=True)
-            # file.create_dataset('date_flag', data=flag, maxshape=(8000, 1), chunks=True)
-            return flag
-
     def is_repeat(self, field):
         '''
         input : file name or field name
@@ -103,6 +92,26 @@ class DailyDB(LocalFileSystem):
         fields = [i[:-4] for i in file_names]
         return fields
 
+    def _update_flag(self, data, name, h5_obj=None):
+        flag = pd.DataFrame(data).values
+        flag = self._convert_string_array(flag, None)
+        if len(data) == 0:
+            return
+        if h5_obj is None:
+            colname = data.name
+            file = self.get_file(colname)
+            file.create_dataset(name, data=flag,chunks=True, maxshape=(10000, 1),compression="gzip")
+        elif name in h5_obj.keys():
+            num = len(flag)
+            dset = h5_obj[name]
+            new_shape = (dset.shape[0] + num, dset.shape[1])
+            dset.resize(new_shape)
+            dset[-num:, :] = flag.astype(dset.dtype)
+        else:
+            h5_obj.create_dataset(name, data=flag, maxshape=(10000, 1),chunks=True)
+            return flag
+
+
     def _create_a_file(self,data,field):
         if field not in self.exist_fields:
             file = self.get_file(field)
@@ -112,6 +121,7 @@ class DailyDB(LocalFileSystem):
             self._update_flag(data.columns, 'symbol_flag' , h5_obj=file)
             self._update_flag(data.index, 'date_flag' , h5_obj=file)
             file.close()
+            self.update_info(field)
             print(field, 'ok!')
 
     def update_a_file(self,data,field,how='append'):
@@ -154,11 +164,14 @@ class DailyDB(LocalFileSystem):
             symbol.sort()
             dset = file['data']
 
-            if len(symbol) > 0:
+            if len(symbol) > 0 :
                 new_shape = (dset.shape[0], dset.shape[1] + len(symbol))
                 dset.resize(new_shape)
-                dt = self._convert_string_array(data.loc[exist_date , symbol].values,None)
-                dset[:, -len(symbol):] = dt
+                if (len(list(set(exist_date) - set(new_date))) > 0) or len(symbol) > 100:
+                    dt = self._convert_string_array(data.loc[exist_date , symbol].values,None)
+                    dset[:, -len(symbol):] = dt
+                else:
+                    dset[:, -len(symbol):] = np.NaN
                 exist_symbol = exist_symbol+symbol
 
             if len(date) > 0:
@@ -169,14 +182,14 @@ class DailyDB(LocalFileSystem):
 
             self._update_flag(symbol,'symbol_flag',file)
             self._update_flag(date, 'date_flag', file)
-
+            self.update_info(field)
             print(field ,'data has been updated,new date %s ,new symbol %s'%(len(date),len(symbol)))
 
 def test_write():
     fp = r'C:\Users\siche\Desktop\data1'
     db = DailyDB(fp,'daily')
 
-    from datadesk.data_origin import test
+    from datasync.data_origin.sql_origin import test
     df = test()
 
     for i in df.columns:

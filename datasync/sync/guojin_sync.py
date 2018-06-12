@@ -5,7 +5,7 @@ Created on Wed May  9 22:34:50 2018
 @author: xinger
 """
 
-from datadesk.props import set_config
+from datadesk.guojin_props import set_config
 from datadesk.data_origin import *
 from datadesk.dataReceiver.hdf5 import DailyDB
 from datadesk.utils import logger
@@ -22,7 +22,7 @@ def sync_one(k,v,origin):
 
     logger.info('%s start' % (view), exc_info=True)
     df = origin.read(props = v)
-
+    df['TRADE_DT'] = df['TRADE_DT'].astype(int)
     if 'S_DQ_TRADESTATUS' in df.columns.values:
         df['S_DQ_TRADESTATUS'] = df['S_DQ_TRADESTATUS'].apply(lambda x:x.encode('latin1').decode('gbk'))
         df['S_DQ_TRADESTATUS'][df['S_DQ_TRADESTATUS'] == '交易'] = '1'
