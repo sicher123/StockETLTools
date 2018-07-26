@@ -18,7 +18,7 @@ def filter_Parser(filter):
     return res
 
 
-def props_to_sql(props):
+def props_to_sql(props,date_type = 'int'):
     '''
     parser jaqs origin filter
     str --->>>   dict
@@ -35,18 +35,28 @@ def props_to_sql(props):
     if fields == '':
         fields = '*'
 
-    sql = '''SELECT %s FROM %s WHERE OBJECT_ID is not null ''' % (fields, view)
+    sql = '''SELECT %s FROM %s WHERE 1 = 1 ''' % (fields, view)
 
     for k, v in props.items():
         if v == '':
             continue
+
         if k == 'start_date':
-            sql += '''AND %s >= %s ''' % (DATE_NAME, v)
+            if date_type == 'int':
+                sql += '''AND %s >= %s ''' % (DATE_NAME, v)
+            elif date_type == 'datetime':
+                sql += '''AND %s >= cast('%s' as datetime) ''' % (DATE_NAME, v)
+
         elif k == 'end_date':
-            sql += '''AND %s <= %s ''' % (DATE_NAME, v)
+            if date_type == 'int':
+                sql += '''AND %s >= %s ''' % (DATE_NAME, v)
+            elif date_type == 'datetime':
+                sql += '''AND %s >= cast('%s' as datetime) ''' % (DATE_NAME, v)
+
         elif ',' in v:
-            values = '("' + '","'.join(v.split(',')) + '")'
-            sql += '''AND %s in '%s' ''' % (k, values)
+            values = tuple(v.split(','))
+            sql += '''AND %s in %s ''' % (k, values)
+
         else:
             sql += '''AND %s='%s' ''' % (k, v)
 
@@ -70,7 +80,7 @@ class DataOrigin(object):
         '''
         pass
 
-    def read(self):
+    def read(self,):
         '''
         查询数据
         :return: dataframe

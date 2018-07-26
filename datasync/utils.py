@@ -4,54 +4,75 @@ Created on Wed May  9 22:34:50 2018
 
 @author: xinger
 """
-import json
 import os
 
-def trans_symbol(symbols,dtype = 'standard'):
-    assert dtype in  ['standard','exchange','code'] , 'dtype must in [standard, exchange, code]'
+
+def trans_symbol(symbols, dtype='standard'):
+    assert dtype in ['standard', 'exchange', 'code'], 'dtype must in [standard, exchange, code]'
 
     def func(_symbol):
         code_list = _symbol.split('.')
         num = _symbol[0]
-        symbol = ''
         try:
-            int (num)
-        except :
+            int(num)
+        except:
             return _symbol
 
+        symbol = ''
         if len(code_list) == 1:
             if dtype == 'standard':
-                if (num == '0' or num == '3') or code_list[-1] == 'XSHE':
+                if num == '0' or num == '3':
                     symbol = code_list[0] + '.SZ'
-                elif (num == '6') or code_list[-1] == 'XSHG':
+                elif num == '6':
                     symbol = code_list[0] + '.SH'
 
             elif dtype == 'exchange':
-                if (num == '0' or num == '3') or (code_list[-1] == 'SZ' or code_list[-1] == 'sz'):
+                if num == '0' or num == '3':
                     symbol = code_list[0] + '.XSHE'
-                elif (num == '6') or code_list[-1] == 'SH' or code_list[-1] == 'sh':
+                elif num == '6':
                     symbol = code_list[0] + '.XSHG'
 
             elif dtype == 'code':
-                if num in ['0','3','6']:
+                if num in ['0', '3', '6']:
                     symbol = code_list[0]
 
             return symbol
 
-    if isinstance(symbols,str):
+        else:
+            if dtype == 'standard':
+                if code_list[-1].upper() == 'SZ' or code_list[-1] == 'XSHE':
+                    symbol = code_list[0] + '.SZ'
+                elif code_list[-1].upper() == 'SH' or code_list[-1] == 'XSHG':
+                    symbol = code_list[0] + '.SH'
+
+            elif dtype == 'exchange':
+                if code_list[-1].upper() == 'SZ' or code_list[-1] == 'XSHE':
+                    symbol = code_list[0] + '.XSHE'
+                elif code_list[-1].upper() == 'SH' or code_list[-1] == 'XSHG':
+                    symbol = code_list[0] + '.XSHG'
+
+            elif dtype == 'code':
+                if num in ['0', '3', '6']:
+                    symbol = code_list[0]
+
+            return symbol
+
+    if isinstance(symbols, str):
         return func(symbols)
-    elif isinstance(symbols,list):
+    else:
         return [func(i) for i in symbols if func(i) != '']
 
 
-def logger(path):
+def logger(date, path):
     import logging
     logger = logging.getLogger(__name__)
     logger.setLevel(level=logging.INFO)
+    path = path + '//log'
     if not os.path.exists(path):
-        os.mkdir(path)
-    handler = logging.FileHandler(path + "//log.txt")
+        os.makedirs(path)
+    handler = logging.FileHandler(path + "//%s_log.txt"%(date))
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
+

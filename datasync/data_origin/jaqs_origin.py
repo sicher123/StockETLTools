@@ -4,6 +4,7 @@ from jaqs.data.dataservice import RemoteDataService
 import warnings
 warnings.filterwarnings("ignore")
 
+
 class DataServiceOrigin(DataOrigin):
     def __init__(self, db_config):
         super(DataServiceOrigin, self).__init__(db_config)
@@ -11,11 +12,11 @@ class DataServiceOrigin(DataOrigin):
         self.ds_props = None
         self.connect(db_config)
 
-    def connect(self,db_config):
+    def connect(self, db_config):
         self.ds_props = {'remote.data.address': db_config['addr'],
-                        'remote.data.username': db_config['user'],
-                        'remote.data.password': db_config['password'],
-                         "timeout":600}
+                         'remote.data.username': db_config['user'],
+                         'remote.data.password': db_config['password'],
+                         "timeout": 600}
         try:
             ds = RemoteDataService()
             ds.init_from_config(self.ds_props)
@@ -23,35 +24,63 @@ class DataServiceOrigin(DataOrigin):
         except:
             raise ValueError('数据库连接失败，请检查配置信息是否正确')
 
-    def all_symbol(self,start_date,end_date,add_index=False):
+    def all_symbol(self, start_date, end_date, add_index=False):
         symbol = self.conn.query_index_member('000001.SH', start_date, end_date) + \
-                 self.conn.query_index_member('399106.SZ',start_date,end_date)
+                 self.conn.query_index_member('399106.SZ',start_date, end_date)
         symbol = [i for i in symbol if i[0] != '2' and i[0] != '9']
 
         if add_index:
             df1, msg = self.conn.query(view="jz.instrumentInfo",
-                                          fields="symbol",
-                                          filter="market=SH&inst_type=100",
-                                          data_format='pandas')
+                                       fields="symbol",
+                                       filter="market=SH&inst_type=100",
+                                       data_format='pandas')
 
             df2, msg = self.conn.query(view="jz.instrumentInfo",
-                                      fields="symbol",
-                                      filter="market=SZ&inst_type=100",
-                                      data_format='pandas')
+                                       fields="symbol",
+                                       filter="market=SZ&inst_type=100",
+                                       data_format='pandas')
             index = list(df1['symbol']) + list(df2['symbol'])
             symbol.extend(index)
-        return symbol
+        return list(set(symbol))
 
-    def read(self, props=None, sql=None,limit = 1000):
+    def read_lb(self, props):
+        view = props.pop('view')
+        field = props.pop('fields')
+        start_date = props.pop('start_date')
+        end_date = props.pop('end_date')
+
+        if isinstance(start_date,int):
+            _filter = 'start_date=%s&end_date=%s'%(start_date,end_date)
+        else:
+            _filter = ''
+
+        for k, v in props.items():
+            _filter += '&%s=%s'%(k, v)
+
+        if field is None:
+            field = ''
+
+        df, msg = self.conn.query(
+            view=view,
+            fields=field,
+            filter=_filter,
+            data_format='pandas')
+
+        if msg == "0,":
+            return df
+
+    def read(self, props=None, sql=None, limit=1000):
+        if '.' in props['view']:
+            return self.read_lb(props)
+
         view = props.pop('view')
         field = props.pop('fields')
         start_date = props['start_date']
         end_date = props['end_date']
-        if view == 'STOCK_D':
-            symbol = self.all_symbol(start_date,end_date,add_index=True)
+        if view == 'Stock_D':
+            symbol = self.all_symbol(start_date, end_date, add_index=True)
         else:
-            symbol = self.all_symbol(start_date,end_date,add_index=False)
-        dates = self.conn.query_trade_dates(start_date, end_date)
+            symbol = self.all_symbol(start_date, end_date, add_index=False)
 
         num = len(symbol)
 
@@ -63,7 +92,7 @@ class DataServiceOrigin(DataOrigin):
                 s = ','.join(s)
 
             _filter = 'symbol={}&start_date={}&end_date={}'.format(s, start_date, end_date)
-            if view == 'STOCK_D':
+            if view == 'Stock_D':
                 while True:
                     try:
                         self.conn.init_from_config(self.ds_props)
@@ -72,7 +101,6 @@ class DataServiceOrigin(DataOrigin):
                             break
                     except:
                         print('query faild, retry')
-
 
             elif view == 'factors':
                 while True:
@@ -85,7 +113,6 @@ class DataServiceOrigin(DataOrigin):
                         print('query faild, retry')
 
             elif view == 'SecDailyIndicator':
-                #data, msg = self.conn.query_lb_dailyindicator(s, start_date, end_date, fields=field)
 
                 while True:
                     try:
@@ -95,7 +122,6 @@ class DataServiceOrigin(DataOrigin):
                             break
                     except:
                         print('query faild, retry')
-
 
             elif view == 'adjust':
                 dic = {}
@@ -113,7 +139,6 @@ class DataServiceOrigin(DataOrigin):
                     except:
                         print('query faild, retry')
 
-
                 fld = list(set(fld.split(',') + ['trade_date', 'symbol']))
                 data = data.loc[:, fld]
                 data = data.rename(dic, axis=1)
@@ -121,7 +146,7 @@ class DataServiceOrigin(DataOrigin):
             elif view == 'adjust_factor':
                 data = self.conn.query_adj_factor_daily(s, start_date, end_date)
                 data = data.stack().reset_index()
-                data.columns = ['trade_date','symbol','adjust_factor']
+                data.columns = ['trade_date', 'symbol', 'adjust_factor']
             return data
 
         l = []
@@ -143,14 +168,21 @@ class DataServiceOrigin(DataOrigin):
         df = pd.concat(l)
         return df
 
+    def read_to_object(self, props=None, sql=None, limit=1000):
+        #from datasync.data import DataFrameView
+        #return DataFrameView(self.read(props=None, sql=None, limit=1000))
+        pass
+
 def test():
-    #props = {'start_date': 20180301, 'end_date': 20180501, 'fields':'adjust_factor' , 'view':'adjust_factor'}
-    props = {'start_date': 20180301, 'end_date': 20180501, 'fields': 'open_adj,low_adj', 'view': 'adjust'}
-    db_config = {'addr':'tcp://192.168.0.102:23000','user':'1','password':'2'}
+    props = {'start_date': 20180301, 'end_date': 20180501, 'fields': 'adjust_factor', 'view': 'adjust_factor'}
+#    props = {'start_date': 20180301, 'end_date': 20180501, 'fields': 'open_adj,low_adj', 'view': 'adjust'}
+    db_config = {'addr': 'tcp://192.168.0.101:23000', 'user': '1', 'password': '2'}
 
     dso = DataServiceOrigin(db_config)
-    data = dso.read(props = props)
-    print (data)
+    data = dso.read(props=props)
+    print(data)
 
-#if __name__ == '__main__':
-#    test()
+
+if __name__ == '__main__':
+    test()
+
