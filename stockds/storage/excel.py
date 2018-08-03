@@ -1,4 +1,10 @@
-class Excel(DataBase):
+import os
+import openpyxl
+import pandas as pd
+from stockds.storage import StorageBase
+
+
+class Excel(StorageBase):
     def __init__(self, root, dir_name):
         self.root = root
         self.dir_name = dir_name
@@ -17,16 +23,12 @@ class Excel(DataBase):
             print('{}.xlsx已写完'.format(names[i]))
 
     def update(self, df, names):
-        '''
-        input :
-            A DataFrame
-        '''
         if type(names) == str:
             names = names.split(',')
         for i in range(len(names)):
             path = self.path(names[i])
 
-            wb = load_workbook(path)
+            wb = openpyxl.load_workbook(path)
             ws = wb['Sheet1']
 
             [ws.append(r) for r in dataframe_to_rows(df[i], index=True, header=False)]
@@ -49,3 +51,9 @@ class Excel(DataBase):
 
     def delete(self):
         pass
+
+
+def test():
+    db_config = {}
+    from stockds.origin.mongodb_origin import MongodbOrigin
+    origin = MongodbOrigin()

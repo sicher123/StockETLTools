@@ -14,6 +14,7 @@ import os
 from abc import ABCMeta, abstractmethod
 now = datetime.now
 
+
 class DataBase(object):
     __metaclass__ = ABCMeta
 
@@ -42,7 +43,7 @@ class Mongodb(DataBase):
         client = pymongo.MongoClient(host, port)
         self.db = client[dbname]
      
-    def insert(self,df,clname):
+    def insert(self, df, clname):
         clnames = clname.split(',')
         if type(clname) == str:
             name = clname
@@ -66,15 +67,15 @@ class Mongodb(DataBase):
                 data = df.reset_index().to_dict(orient='records')
                 flt = pd.DataFrame(df.index).to_dict(orient='records')
                 [cl.update_one(data[i],{'$set':flt[i]},upsert=True) for i in range(len(flt))]
-                print ("成功下载合约{}的BAR数据,用时{}".format(clname,time()-start))
+                print("成功下载合约{}的BAR数据,用时{}".format(clname,time()-start))
             if type(df) == list:
                 data = df[i].reset_index().to_dict(orient='records')
                 flt = pd.DataFrame(df[i].index).to_dict(orient='records')
-                print (flt)
+                print(flt)
                 [cl.update_one(flt[i],{'$set':data[i]},upsert=True) for i in range(len(flt))]
-                print ("成功下载合约{}的BAR数据,用时{}".format(clname,time()-start))
+                print("成功下载合约{}的BAR数据,用时{}".format(clname,time()-start))
 
-    def find(self,prop):
+    def find(self, prop):
         '''
         symbol : str or list
         start_time : datetime.datetime 
@@ -119,57 +120,6 @@ class Mongodb(DataBase):
             _info[clname] = info
         return pd.DataFrame.from_dict(_info,orient='index')
 
-class Excel(DataBase):
-    def __init__(self,root,dir_name):
-        self.root = root
-        self.dir_name = dir_name
-     
-    def path(self,doc_name):
-        if not os.path.exists(self.root + '\\' + self.dir_name):
-            os.mkdir(self.root + '\\' + self.dir_name)
-        return self.root + '\\' + self.dir_name + '\\' + doc_name + '.xlsx' 
-        
-    def insert(self,df,names):
-        if type(names) == str:
-            names = names.split(',')
-        for i in range(len(names)):
-            path = self.path(names[i])
-            df[i].to_excel(path)
-            print ('{}.xlsx已写完'.format(names[i]))
-
-    def update(self,df,names):
-        '''
-        input :
-            A DataFrame 
-        '''
-        if type(names) == str:
-            names = names.split(',')
-        for i in range(len(names)):
-            path = self.path(names[i])
-            
-            wb = load_workbook(path)
-            ws = wb['Sheet1']
-            
-            [ws.append(r) for r in dataframe_to_rows(df[i], index=True, header=False)]
-            wb.save(path)    
-        
-        print ('{}.xlsx数据更新完成'.format(doc_name))
-
-    def find(self,prop):
-        symbols = prop['symbol'].split(',')
-        fields = prop['fields'].split(',')
-        start_date = prop['start_date']
-        end_date = prop['end_date']
-        
-        data = []
-        for s in symbols:   
-            doc_name = self.root + '\\' + self.dir_name + '\\' + s +'.xlsx'
-            dt = pd.read_excel(doc_name).set_index('trade_date')
-            data.append(dt.loc[start_date:end_date,fields])
-        return pd.concat(data)
-        
-    def delete(self):
-        pass 
     
 class Hdf5(DataBase):
     def __init__(self,root = r'C:\Users\xinger\Desktop'):
@@ -177,7 +127,7 @@ class Hdf5(DataBase):
      
     def insert(self,df,doc_name = 'data.hd5'):
         _dir = self.root + '\\' + doc_name
-        data = dataformat(df,_format = 'jaqs')
+        data = dataformat(df,_format='jaqs')
         f = pd.HDFStore(_dir,'w')
         f['data_d'] = data
         f.close()
@@ -187,7 +137,7 @@ class Hdf5(DataBase):
 
     def find(self,doc_name):
         _dir = self.root + '\\' + doc_name
-        f = pd.HDFStore(_dir,'r')
+        f = pd.HDFStore(_dir, 'r')
 
         data = f['data_d']
         f.close()

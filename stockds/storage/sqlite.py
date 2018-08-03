@@ -12,7 +12,6 @@ import warnings
 warnings.filterwarnings("ignore")
 today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
 
-fp = r'C:\Users\xinger\Sync\data'
 
 class sqlite_db(object):
     def __init__(self, fp):
@@ -42,14 +41,39 @@ class sqlite_db(object):
                     );'''
             self.execute(sql)
 
-        try:
-            sql = '''UPDATE attrs SET updated_date = %s  WHERE view = "%s";''' % (attrs, view)
-            self.execute(sql)
-        except:
+        df = pd.read_sql('select * from attrs;', self.conn)
+        if df.shape == (0, 0):
             sql = '''INSERT INTO attrs(view,updated_date) VALUES("%s",%s);''' % (view, attrs)
             self.execute(sql)
 
-    def get_update_info(self,view):
+        elif view not in df['view'].values:
+            sql = '''INSERT INTO attrs(view,updated_date) VALUES("%s",%s);''' % (view, attrs)
+            self.execute(sql)
+
+        else:
+            sql = '''UPDATE attrs SET updated_date = %s  WHERE view = "%s";''' % (attrs, view)
+            self.execute(sql)
+
+    def update_attr(self):
+        c = self.conn.cursor()
+        for view in self.all_table_names:
+            datename = None
+            c.execute('''PRAGMA table_info("%s");''' % (view, ))
+            fields = [i[1] for i in c.fetchall()]
+            if 'trade_date' in fields:
+                datename = 'trade_date'
+            elif 'ann_date' in fields:
+                datename = 'ann_date'
+
+            if datename:
+                sql = '''select max(%s) from "%s";''' % (datename, view)
+                c.execute(sql)
+                last_date = c.fetchall()[0][0]
+                self.set_attr(view, last_date)
+            else:
+                self.set_attr(view, today)
+
+    def get_update_info(self, view):
         sql = '''select updated_date from "attrs" WHERE view = "%s";''' % (view,)
         c = self.conn.cursor()
         try:
@@ -72,3 +96,7 @@ class sqlite_db(object):
     def update_on_columns(self):
         pass
 
+if __name__ == '__main__':
+    fp = r'C:\Users\xinger\Sync\data'
+    sqldb = sqlite_db(fp)
+    sqldb.update_attr()

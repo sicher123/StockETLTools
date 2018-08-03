@@ -1,5 +1,5 @@
 import pandas as pd
-from datasync.data_origin import DataOrigin
+from stockds.origin import DataOrigin
 from jaqs.data.dataservice import RemoteDataService
 import warnings
 warnings.filterwarnings("ignore")

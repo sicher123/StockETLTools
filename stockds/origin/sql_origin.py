@@ -1,6 +1,6 @@
 import pandas as pd
 import cx_Oracle as oracle
-from datasync.data_origin import DataOrigin, props_to_sql
+from stockds.origin import DataOrigin, props_to_sql
 
 
 class MSSqlOrigin(DataOrigin):

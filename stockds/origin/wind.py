@@ -1,6 +1,6 @@
 import pandas as pd
 from WindPy import w
-from datasync.data_origin import DataOrigin
+from stockds.origin import DataOrigin
 
 
 class WindOrigin(DataOrigin):
@@ -27,3 +27,4 @@ class WindOrigin(DataOrigin):
             return data
         else:
             print("找不到{}合约数据".format(symbol))
+

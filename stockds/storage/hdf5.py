@@ -3,7 +3,7 @@ import numpy as np
 import h5py
 import os
 import json
-
+from stockds.storage
 
 class LocalFileSystem(object):
     def __init__(self, fp):
@@ -195,7 +195,7 @@ def test_write():
     db = DailyDB(fp, 'daily')
 
 '''
-    from datasync.data_origin.sql_origin import test
+    from datasync.origin.sql_origin import test
     df = test()
 
     for i in df.columns:
