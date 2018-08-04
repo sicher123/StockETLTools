@@ -3,6 +3,7 @@ class StorageBase(object):
     pass
 
 
+
 class FileStorageBase(StorageBase):
     def __init__(self, fp):
         self.fp = fp
@@ -22,7 +23,30 @@ class FileStorageBase(StorageBase):
 
 
 class DBStorageBase(StorageBase):
-    pass
+    def __init__(self, db_config):
+
+
+
+class SqlBase(object):
+    @property
+    def cursor(self):
+        return self.conn.cursor()
+
+    def execute(self, sql):
+        cursor = self.cursor
+        cursor.execute(sql)
+        if 'select' in sql or 'SELECT' in sql:
+            return cursor.fetchall()
+        else:
+            self.conn.commit()
+            cursor.close()
+
+    def get_all_table_names(self):
+        pass
+
+    def close(self):
+        self.cursor.close()
+        self.conn.close()
 
 
 class HDF5Base(object):
@@ -30,7 +54,7 @@ class HDF5Base(object):
         pass
 
     def update_file(self):
-
+        pass
 
     def read_file(self):
         pass
@@ -44,3 +68,5 @@ class HDF5Base(object):
 class Hdf5Storage(HDF5Base, StorageBase):
     def __init__(self):
         super(Hdf5Storage, self).__init__()
+
+class Sql
