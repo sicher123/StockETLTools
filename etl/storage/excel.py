@@ -1,10 +1,12 @@
 import os
 import openpyxl
 import pandas as pd
-from stockds.storage import StorageBase
+from stockds.storage import FileStorageBase
 
+def dataframe_to_rows:
+    pass
 
-class Excel(StorageBase):
+class Excel(FileStorageBase):
     def __init__(self, root, dir_name):
         self.root = root
         self.dir_name = dir_name

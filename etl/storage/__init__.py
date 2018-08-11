@@ -1,7 +1,9 @@
 import os
-class StorageBase(object):
-    pass
 
+
+class StorageBase(object):
+    def is_connected(self):
+        pass
 
 
 class FileStorageBase(StorageBase):
@@ -24,6 +26,11 @@ class FileStorageBase(StorageBase):
 
 class DBStorageBase(StorageBase):
     def __init__(self, db_config):
+        self.conn  = self.connection(db_config)
+
+    def connection(self):
+        return
+
 
 
 

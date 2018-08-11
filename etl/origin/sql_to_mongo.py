@@ -166,12 +166,6 @@ def key_after_last(field, operation):
 
 
 def last_in_array(array, operation=None):
-    """Return the last element in an array.
-
-    I think this is just [-1]
-
-    """
-
     if len(array) == 0:
         return None
 
@@ -491,31 +485,47 @@ class Sql2Mongo(object):
         return rows
 
 
-def process_query(query_string, debug_only, database, connection=None):
-    """Process the query.
-    1. select * from users;
-    2. select screen_name from users;
-    3. select email from users where createdon like 'sumerian'"""
-
-    # 1. Verify it's a somewhat valid query string.    
-    if 'from' not in query_string or 'select' not in query_string:
-        return []
-
-    sqlobj = Sql2Mongo(query_string.lower())
-
-    if debug_only:
-        return sqlobj.getx()
-
-    # 6. Run the query.
-    if connection is None:
-        raise Exception('Please provide a Mongo connection')
-    else:
-        rows = sqlobj.execute(connection, database)
-
-    return rows
 
 
-connection = pymongo.MongoClient('192.168.0.102', 27017)
+connection = pymongo.MongoClient('192.168.0.104', 27017)
 database = ['lb']
 
 query_string = 'select * from income where report_date > 20170101'
+
+props = {'start_date': 20140801,
+         'end_date': 20140906,
+         'fields': '',
+         'view': 'ZYYX2.CON_FORECAST_STK',
+         'DATE_NAME': 'TDATE'}
+
+
+
+
+class FilterBuilder(object):
+    def __init__(self, input):
+        self.input = input
+        if isinstance(input, str):
+            self.input_type = 'sql'
+        elif isinstance(input, tuple):
+            self.input_type = 'mongo'
+        elif isinstance(input, dict):
+            self.input_type = 'props'
+
+    def split(self):
+
+
+    def mongo_to_sql(self):
+        pass
+
+    def props_to_sql(self):
+        pass
+
+    def sql_to_mongo(self):
+        pass
+
+    def props_to_mogno(self):
+        pass
+
+class MongoFlt(object):
+    def split(self):
+        pass
