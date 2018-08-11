@@ -60,6 +60,7 @@ shape = get_shape(path)
 
 import json
 
+
 def set_attr(path):
     dic1 = {}
     for name in os.listdir(path):

@@ -6,17 +6,24 @@ from datasync.log import Log
 from datasync.dataReceiver.hdf5 import DailyDB
 from datasync.dataReceiver.sqlite import sqlite_db
 from datasync.data_origin.mongodb_origin import MongodbOrigin
+from datasync.utils import read_json
+
+config = read_json(r'../config/config.json')
+for k, v in config.items():
+    globals()[k] = v
+
+if 'fp' not in dir():
+    fp = r'C:\Users\xinger\Sync\data'
+    db_config = {'addr': '192.168.0.104'}
+    lb_update_type = 'add'
 
 today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
 yestoday = int(datetime.strftime(datetime.today() - timedelta(days=1), '%Y%m%d'))
-fp = r'C:\Users\xinger\Sync\data'
 logger = Log(fp+'//log', today)
-db_config = {'addr': '192.168.0.104'}
 origin = MongodbOrigin(db_config)
 mongo_log = origin.get_last_log()
 default_start_date = 19990101
 default_furture_date = 20200101
-
 
 def loop(func, n=0):
     def wrapper(n=n):
@@ -44,8 +51,8 @@ def get_from_jaqs(props):
     passwd = 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVfdGltZSI6IjE1MTUwNDk5MzI2MDAiLCJpc3MiOiJhdXRoMCIsImlkIjoiMTMyNDM4MjgwNjgifQ.KpmnMkuO7ApTWvBAwgvHwWDkmoasBIdQHl2gQJVmqIA'
 
     db_config = {'addr': addr,
-                'user': name,
-                'password': passwd}
+                 'user': name,
+                 'password': passwd}
 
     dsorigin = DataServiceOrigin(db_config)
     df = dsorigin.read(props=props)
@@ -187,7 +194,7 @@ def update_daily():
             sync_adjfactor(props)
 
 
-def update_lb():
+def update_lb(update_type='add'):
     lb_views = ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator',
                 'lb.indexCons', 'jz.secTradeCal', 'lb.secIndustry', 'jz.apiParam',
                 'lb.profitExpress', 'lb.secDividend', 'lb.indexWeightRange',
@@ -196,7 +203,6 @@ def update_lb():
     for view in lb_views:
         db = sqlite_db(fp)
         date_info = db.get_update_info(view)
-        print(view, date_info)
         end_date = today
         if date_info:
             start_date = date_info
@@ -211,9 +217,19 @@ def update_lb():
             start_date = default_start_date
             end_date = today
 
+        spc_view_list = ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator''lb.profitExpress', 'lb.secDividend']
+        if update_type == 'full' and view in spc_view_list:
+            try:
+                db.execute('''DROP TABLE "%s";''' % (view, ))
+            except Exception:
+                pass
+            start_date = default_start_date
+
         if start_date == end_date:
             logger.info('date-- %s ,view -- %s data is the newest' % (start_date, view))
             continue
+
+        print('%s start query, start_date:%s, end_date: %s' % (view, start_date, end_date))
 
         props = {'view': view,
                  'start_date': start_date,
@@ -223,6 +239,7 @@ def update_lb():
 
         if view in ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator', 'lb.indexWeightRange']:
             dst_upd(props, db)
+
         elif view in ['jz.instrumentInfo', 'jz.apiParam', 'jz.secTradeCal', 'lb.indexCons']:
             props['end_date'] = default_furture_date
             lb_sync_one(props, db, if_exists='replace')
@@ -256,6 +273,5 @@ def check_date():
 
 
 if __name__ == '__main__':
-    update_lb()
+    update_lb(update_type=lb_update_type)
     update_daily()
-

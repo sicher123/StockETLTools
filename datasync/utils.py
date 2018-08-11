@@ -5,7 +5,9 @@ Created on Wed May  9 22:34:50 2018
 @author: xinger
 """
 import os
-
+import json
+import errno
+import codecs
 
 def trans_symbol(symbols, dtype='standard'):
     assert dtype in ['standard', 'exchange', 'code'], 'dtype must in [standard, exchange, code]'
@@ -76,3 +78,60 @@ def logger(date, path):
     logger.addHandler(handler)
     return logger
 
+
+def create_dir(filename):
+    """
+    Create dir if directory of filename does not exist.
+
+    Parameters
+    ----------
+    filename : str
+
+    """
+    if not os.path.exists(os.path.dirname(filename)):
+        try:
+            os.makedirs(os.path.dirname(filename))
+        except OSError as exc:  # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+
+
+def read_json(fp):
+    """
+    Read JSON file to dict. Return None if file not found.
+
+    Parameters
+    ----------
+    fp : str
+        Path of the JSON file.
+
+    Returns
+    -------
+    dict
+
+    """
+    content = dict()
+    try:
+        with codecs.open(fp, 'r', encoding='utf-8') as f:
+            content = json.load(f)
+    except IOError as e:
+        if e.errno not in (errno.ENOENT, errno.EISDIR, errno.EINVAL):
+            raise
+    return content
+
+
+def save_json(serializable, file_name):
+    """
+    Save an serializable object to JSON file.
+
+    Parameters
+    ----------
+    serializable : object
+    file_name : str
+
+    """
+    fn = os.path.abspath(file_name)
+    create_dir(fn)
+
+    with codecs.open(fn, 'w', encoding='utf-8') as f:
+        json.dump(serializable, f, separators=(',\n', ': '))

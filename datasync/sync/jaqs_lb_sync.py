@@ -140,8 +140,8 @@ class sql_sync(data_sync):
             dbname, clname = name.split('.')
             fields = list(self.client[dbname][clname].find_one().keys())
             
-            if name in ['lb.cashFlow','lb.balanceSheet', 'lb.income']:
-                self.distributed_update(name,start_date, end_date)
+            if name in ['lb.cashFlow', 'lb.balanceSheet', 'lb.income']:
+                self.distributed_update(name, start_date, end_date)
             
             elif 'report_date' in fields:
                 if type(self.client[dbname][clname].find_one()['report_date']) == str:
