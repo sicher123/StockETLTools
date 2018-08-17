@@ -11,9 +11,6 @@ class FileStorageBase(StorageBase):
         self.fp = fp
         if not os.path.exists(fp):
             os.mkdir(fp)
-            with h5py.File(fp + '//sysInfo.h5') as file:
-                file.attrs['user'] = 'xinger'
-                file.attrs['password'] = 'Xinger520'
 
     def get_db(self, dbname):
         path = self.fp + '//' + dbname
@@ -32,8 +29,6 @@ class DBStorageBase(StorageBase):
         return
 
 
-
-
 class SqlBase(object):
     @property
     def cursor(self):
@@ -48,12 +43,12 @@ class SqlBase(object):
             self.conn.commit()
             cursor.close()
 
-    def get_all_table_names(self):
-        pass
-
     def close(self):
         self.cursor.close()
         self.conn.close()
+
+    def get_all_table_names(self):
+        pass
 
 
 class HDF5Base(object):
@@ -70,10 +65,10 @@ class HDF5Base(object):
         pass
 
 
-
-
 class Hdf5Storage(HDF5Base, StorageBase):
     def __init__(self):
         super(Hdf5Storage, self).__init__()
 
-class Sql
+
+
+import blaze

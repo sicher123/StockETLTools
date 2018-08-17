@@ -7,21 +7,23 @@ Created on Thu May 10 18:23:02 2018
 import sqlite3
 import pandas as pd
 from datetime import datetime
+from etl.storage import SqlBase, FileStorageBase
 import warnings
 
 warnings.filterwarnings("ignore")
 today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
 
 
-class sqlite_db(object):
-    def __init__(self, fp):
+class SqliteStorage(FileStorageBase, SqlBase):
+    def __init__(self, folder_path):
+        super(SqliteStorage, self).__init__(folder_path)
         path = fp + '//' + 'data.sqlite'
         self.fp = fp
         self.path = path
         self.conn = sqlite3.connect(path)
 
     @property
-    def all_table_names(self):
+    def table_names(self):
         sql = '''SELECT name FROM sqlite_master WHERE type ='table' ORDER BY name;'''
         c = self.conn.cursor()
         c.execute(sql)
@@ -33,6 +35,14 @@ class sqlite_db(object):
         self.conn.commit()
 
     def set_attr(self, view, attrs):
+        '''
+
+        :param view:
+
+        :param attrs:
+        :return:
+        None
+        '''
         if 'attrs' not in self.all_table_names:
             sql = '''CREATE TABLE attrs
                     (
@@ -96,7 +106,7 @@ class sqlite_db(object):
     def update_on_columns(self):
         pass
 
+
 if __name__ == '__main__':
-    fp = r'C:\Users\xinger\Sync\data'
-    sqldb = sqlite_db(fp)
-    sqldb.update_attr()
+    fp = r'D:\data111'
+    sqldb = SqliteStorage(fp)

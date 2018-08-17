@@ -3,16 +3,18 @@ import numpy as np
 import h5py
 import os
 import json
-from stockds.storage
+from etl.storage import StorageBase
+from jaqs.data import DataView
 
 class LocalFileSystem(object):
     def __init__(self, fp):
         self.fp = fp
         if not os.path.exists(fp):
             os.mkdir(fp)
-            with h5py.File(fp + '//sysInfo.h5') as file:
-                file.attrs['user'] = 'xinger'
-                file.attrs['password'] = 'Xinger520'
+
+    @property
+    def table_names(self):
+        return [i for i in os.listdir(self.fp) if os.isfile(i)]
 
     def get_db(self,dbname):
         path = self.fp + '//' + dbname
