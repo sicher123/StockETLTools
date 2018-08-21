@@ -8,26 +8,37 @@ from datasync.data_origin.mongodb_origin import MongodbOrigin
 from datasync.utils import read_json
 
 config = read_json(r'../config/config.json')
+<<<<<<< HEAD
 import os
 print(os.getcwd())
 print(config)
 
+=======
+>>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
 for k, v in config.items():
     globals()[k] = v
 
 if 'fp' not in dir():
     fp = r'C:\Users\xinger\Sync\data'
+<<<<<<< HEAD
     mongo_db_config = {'addr': '192.168.0.104'}
     lb_update_type = 'add'
     default_start_date = 19990101
     default_furture_date = 20200101
+=======
+    db_config = {'addr': '192.168.0.104'}
+    lb_update_type = 'add'
+>>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
 
 today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
 yestoday = int(datetime.strftime(datetime.today() - timedelta(days=1), '%Y%m%d'))
 logger = Log(fp+'//log', today)
+<<<<<<< HEAD
 origin = MongodbOrigin(mongo_db_config)
+=======
+origin = MongodbOrigin(db_config)
+>>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
 mongo_log = origin.get_last_log()
-
 
 def loop(func, n=0):
     def wrapper(n=n):
@@ -53,9 +64,15 @@ def get_from_jaqs(props):
     name = "13243828068"
     passwd = 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVfdGltZSI6IjE1MTUwNDk5MzI2MDAiLCJpc3MiOiJhdXRoMCIsImlkIjoiMTMyNDM4MjgwNjgifQ.KpmnMkuO7ApTWvBAwgvHwWDkmoasBIdQHl2gQJVmqIA'
 
+<<<<<<< HEAD
     jaqs_config = {'addr': addr,
                    'user': name,
                    'password': passwd}
+=======
+    db_config = {'addr': addr,
+                 'user': name,
+                 'password': passwd}
+>>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
 
     dsorigin = DataServiceOrigin(jaqs_config)
     df = dsorigin.read(props=props)
@@ -179,6 +196,10 @@ def update_daily():
         dst_upd(props, db)
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
 def update_lb(update_type='add'):
     lb_views = ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator',
                 'lb.indexCons', 'jz.secTradeCal', 'lb.secIndustry', 'jz.apiParam',
@@ -203,8 +224,12 @@ def update_lb(update_type='add'):
             end_date = today
 
         spc_view_list = ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator''lb.profitExpress', 'lb.secDividend']
+<<<<<<< HEAD
         if update_type == 'replace' and view in spc_view_list:
             # noinspection PyBroadException
+=======
+        if update_type == 'full' and view in spc_view_list:
+>>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
             try:
                 db.execute('''DROP TABLE "%s";''' % (view, ))
             except Exception:
@@ -264,6 +289,7 @@ def check_date():
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     #update_lb()
     #update_daily()
     print(1)
@@ -286,3 +312,7 @@ def adjfactor_to_hd5(props):
     except Exception as e:
         logger.error('%s update failed ,error as %s' % (view, e))
 '''
+=======
+    update_lb(update_type=lb_update_type)
+    update_daily()
+>>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
