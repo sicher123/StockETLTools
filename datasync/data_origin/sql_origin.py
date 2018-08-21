@@ -48,6 +48,7 @@ class OracleOrigin(DataOrigin):
     def connect(self):
         try:
             #_string = 'bigfish/bigfish@172.16.55.54:1521/ORCL'
+            _string = 'FXDAYU/Xinger520@192.168.0.102:1520/xe'
             _string = '%s/%s@%s' % (self.db_config['user'],
                                     self.db_config['password'],
                                     self.db_config['addr'])
@@ -78,9 +79,9 @@ def test_mssql():
 
 
 def test_oracle():
-    db_config = {'addr': "172.16.55.54:1521/ORCL",
-                 'user': "bigfish",
-                 'password': "bigfish"}
+    db_config = {'addr': "192.168.0.102:1520/xe",
+                 'user': "FXDAYU",
+                 'password': "Xinger520"}
 
     props = {'start_date': 20140801,
              'end_date': 20140906,

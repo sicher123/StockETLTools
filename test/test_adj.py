@@ -20,12 +20,12 @@ def cal_adj(field,adj_field):
     d2.columns = ['d', 's', adj_field]
     d1 = (d1*adj).stack().reset_index()
     d1.columns = ['d', 's', field]
-    data = pd.merge(d1,d2,on=['s','d'])
+    data = pd.merge(d1, d2,  on=['s', 'd'])
     data['divide'] = data[field]/data[adj_field]
 
     describe = data['divide'].describe()
     describe.name = field
-    return data ,describe
+    return data, describe
 
 import openpyxl
 
@@ -35,20 +35,20 @@ open,open_d = cal_adj(field,adj_field)
 
 field = 'S_DQ_CLOSE'
 adj_field = 'S_DQ_ADJCLOSE'
-close,close_d = cal_adj(field,adj_field)
+close, close_d = cal_adj(field, adj_field)
 
 
 field = 'S_DQ_HIGH'
 adj_field = 'S_DQ_ADJHIGH'
-high,high_d = cal_adj(field,adj_field)
+high, high_d = cal_adj(field, adj_field)
 
 field = 'S_DQ_LOW'
 adj_field = 'S_DQ_ADJLOW'
-low,low_d = cal_adj(field,adj_field)
+low, low_d = cal_adj(field, adj_field)
 
 import sqlite3
 conn = sqlite3.connect(r'C:\Users\xinger\Desktop\data\adj.sqlite')
-data = pd.read_sql('select * from data1',conn)
+data = pd.read_sql('select * from data1', conn)
 
 dsc = pd.concat([open_d,close_d,high_d,low_d,d],axis=1)
 dsc.to_excel(r'C:\Users\xinger\Desktop\adj_compare.xlsx')

@@ -85,15 +85,14 @@ class MongodbOrigin(DataOrigin):
         view = props.get('view')
         dbname, clname = view.split('.')
 
-        doc = self.conn[dbname][clname].find_one()
+        doc = self.conn[dbname][clname].find_one({})
         exist_fields = list(doc.keys())
 
         date_names = [i for i in exist_fields if i in ['trade_date', 'datetime', 'ann_date', 'in_date']]
         if len(date_names) == 1:
             date_name = date_names[0]
-            doc = self.conn[dbname][clname].find_one(sort=[(date_name, pymongo.DESCENDING)])
-
             proj = {'_id': 0, date_name: 1}
+
             date_type = type(doc[date_name])
             if date_type == int:
                 flt = {date_name: {'$gte': int(start_date), '$lte': int(end_date)}}
@@ -110,23 +109,28 @@ class MongodbOrigin(DataOrigin):
         return flt, proj
 
     @staticmethod
-    def indentify(string_list):
+    def identify(string_list):
         string_list = trans_symbol(string_list)
         # 数字
         is_num = [i.isdigit() for i in string_list]
+        i_is_num = [i[0].isdigit() for i in string_list]
         # 字母
         is_string = [i.isalpha() for i in string_list if '_' not in i]
+        i_is_string = [i[0].isalpha() for i in string_list if '_' not in i]
         # 数字+字母
         is_num_n_string = [(not (i.isalpha() or i.isdigit())) for i in string_list]
 
         if (len(is_num) - is_num.count(True)) <= 2:
-            res = 'trade_date'
+            res = 'symbol'
         elif (len(is_string) - is_string.count(True)) <= 2:
             res = 'fields'
         elif (len(is_num_n_string) - is_num_n_string.count(True)) <= 2:
             res = 'symbol'
+        elif (len(i_is_string) - i_is_string.count(True)) <= 2:
+            res = 'fields'
         else:
-            raise ValueError()
+            raise ValueError('cant identify')
+
         return res
 
     def read(self, props, is_filter=True):
@@ -139,8 +143,8 @@ class MongodbOrigin(DataOrigin):
             columns.remove('_id')
             [columns.remove(i) for i in columns if 'date' in i]
 
-            collection_type = self.indentify(clnames)
-            columns_type = self.indentify(columns)
+            collection_type = self.identify(clnames)
+            columns_type = self.identify(columns)
             data = self.read_db(props, collection_type, columns_type)
 
             if collection_type == 'fields' and columns_type == 'symbol':
@@ -221,22 +225,20 @@ class MongodbOrigin(DataOrigin):
 if __name__ == '__main__':
     db_config = {'addr': '192.168.0.104'}
     origin = MongodbOrigin(db_config)
-    dbname, clname = ('lb', 'income')
 
+    props = {'view': 'lb.income',
+             'start_date': 20170101,
+             'end_date': 20180101}
+    '''
     props = {'view': 'Stock_D',
              'start_date': 20170101,
              'end_date': 20180101,
              'fields': 'trade_date,symbol,open,high'}
-
+             
+    props = {'view': 'fxdayu_factors',
+             'start_date': 20170101,
+             'end_date': 20180201,
+             'fields': 'A010001A'}
+    '''
     # data = origin.read_db(props, 'symbol', 'fields')
     data = origin.read(props)
-
-    for i in ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator', 'lb.indexCons',
-              'jz.secTradeCal', 'lb.secIndustry', 'jz.apiParam', 'lb.profitExpress',
-              'lb.secDividend', 'lb.indexWeightRange', 'jz.instrumentInfo']:
-
-        props = {'view': i,
-                 'start_date': 20180101,
-                 'end_date': 20180711}
-
-        print(origin.read(props))

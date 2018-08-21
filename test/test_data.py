@@ -6,7 +6,8 @@ def get_shape(path,):
     dic1 = {}
     for name in os.listdir(path):
         dic = {}
-        if name.endswith('hd5'):
+        if name == 'adjust_factor.hd5':
+        #if name.endswith('hd5'):
             with h5py.File(path + '//%s'%(name)) as file:
                 keys = list(file.keys())
                 try:
@@ -18,7 +19,7 @@ def get_shape(path,):
                 #dic['data'] = file['data'].shape
                 try:
                     data = pd.DataFrame(index=file['date_flag'][:, -1], columns=file['symbol_flag'][:,-1],data = file['data'][:])
-                    #print(data)
+                    print(data)
                     #print (file['date_flag'][:,-1])
                     #data = data.dropna(how = 'all')
                     #if len(data) == 0:
@@ -55,18 +56,21 @@ class h5View():
                self.file['date_flag'].shape)
         return self.file
 
-path = r'C:\Users\xinger\Sync\data\uqer_factor'
+path = r'D:\data\Stock_D'
 shape = get_shape(path)
 
 import json
 
+
 def set_attr(path):
     dic1 = {}
     for name in os.listdir(path):
-        if name.endswith('hd5'):
+        if name == 'adjust_factor.hd5':
+        #if name.endswith('hd5'):
             with h5py.File(path + '//%s'%(name)) as file:
                 file.attrs['meta'] = json.dumps({'updated_date': 20180709})
                 print(name)
 
 #path = r'D:\data\SecDailyIndicator'
 #shape = set_attr(path)
+

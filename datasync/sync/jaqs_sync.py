@@ -19,7 +19,7 @@ fp = r'C:\Users\xinger\Sync\data'
 config = set_config()
 logger = logger(today, fp)
 
-db_config = {'addr': 'tcp://192.168.0.102:23000', 'password': '2', 'user': '1'}
+db_config = {'addr': 'tcp://192.168.0.104:23000', 'password': '2', 'user': '1'}
 
 config = {'STOCK_D': {'DATE_NAME': 'trade_date',
           'db_config': db_config,
