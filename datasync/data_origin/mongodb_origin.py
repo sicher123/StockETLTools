@@ -128,10 +128,6 @@ class MongodbOrigin(DataOrigin):
             res = 'symbol'
         elif (len(i_is_string) - i_is_string.count(True)) <= 2:
             res = 'fields'
-            elif (len(i_is_num) - i_is_num.count(True)) <= 2:
-                res = 'symbol'
-            else:
-                raise ValueError('cant identify')
         else:
             raise ValueError('cant identify')
 

@@ -3,4 +3,4 @@
 "lb_update_type": "add",
 "default_start_date" :19990101,
 "default_furture_date":20200101,
-"jaqs_db_config":{"addr": "tcp://192.168.0.104:23000", "password": "2", "user": "1"}}}
+"jaqs_db_config":{"addr": "tcp://192.168.0.104:23000", "password": "2", "user": "1"}}
