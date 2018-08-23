@@ -135,7 +135,6 @@ def save_json(serializable, file_name):
 
     with codecs.open(fn, 'w', encoding='utf-8') as f:
         json.dump(serializable, f, separators=(',\n', ': '))
-<<<<<<< HEAD
 
 
 def set_predefine(fp, view):
@@ -163,5 +162,3 @@ def run():
     fp = r'D:\data1year'
     view= 'dyfactors'
     set_predefine(fp, view)
-=======
->>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
