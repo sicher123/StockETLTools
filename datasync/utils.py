@@ -136,7 +136,6 @@ def save_json(serializable, file_name):
     with codecs.open(fn, 'w', encoding='utf-8') as f:
         json.dump(serializable, f, separators=(',\n', ': '))
 
-
 def set_predefine(fp, view):
     import os
     import sqlite3
