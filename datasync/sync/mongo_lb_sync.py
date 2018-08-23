@@ -1,30 +1,36 @@
+import os
 import math
 import numpy as np
 from datetime import datetime, timedelta
+import pathlib
+
 from datasync.log import Log
 from datasync.dataReceiver.hdf5 import DailyDB
 from datasync.dataReceiver.sqlite import sqlite_db
 from datasync.data_origin.mongodb_origin import MongodbOrigin
 from datasync.utils import read_json
 
-config = read_json(r'../config/config.json')
-import os
-print(os.getcwd())
+config_path = pathlib.Path(__file__).absolute().parent.parent / "config" / "config.json"
+config = read_json(config_path)
+default_config = {
+    "fp": os.path.join(os.path.expanduser("~"), "Sync","data"),
+    "mongo_db_config": {'addr': '192.168.0.104'},
+    "lb_update_type": "add",
+    "default_start_date": 19990101,
+    "default_future_date": 20200101,
+}
 print(config)
-
-for k, v in config.items():
-    globals()[k] = v
-
-if 'fp' not in dir():
-    fp = r'C:\Users\xinger\Sync\data'
-    mongo_db_config = {'addr': '192.168.0.104'}
-    lb_update_type = 'add'
-    default_start_date = 19990101
-    default_furture_date = 20200101
+config = dict(default_config, **config)
+print(config)
+fp = config["fp"]
+mongo_db_config = config["mongo_db_config"]
+lb_update_type = config["lb_update_type"]
+default_start_date = config["default_start_date"]
+default_future_date = config["default_future_date"]
 
 today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
 yestoday = int(datetime.strftime(datetime.today() - timedelta(days=1), '%Y%m%d'))
-logger = Log(fp+'//log', today)
+logger = Log(os.path.join(fp, "log"), today)
 origin = MongodbOrigin(mongo_db_config)
 mongo_log = origin.get_last_log()
 
@@ -227,7 +233,7 @@ def update_lb(update_type='add'):
             dst_upd(props, db)
 
         elif view in ['jz.instrumentInfo', 'jz.apiParam', 'jz.secTradeCal', 'lb.indexCons']:
-            props['end_date'] = default_furture_date
+            props['end_date'] = default_future_date
             lb_sync_one(props, db, if_exists='replace')
         else:
             # props['start_date'] = 19990101

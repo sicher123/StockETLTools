@@ -111,12 +111,8 @@ def read_json(fp):
 
     """
     content = dict()
-    try:
-        with codecs.open(fp, 'r', encoding='utf-8') as f:
-            content = json.load(f)
-    except IOError as e:
-        if e.errno not in (errno.ENOENT, errno.EISDIR, errno.EINVAL):
-            raise
+    with codecs.open(fp, 'r', encoding='utf-8') as f:
+        content = json.load(f)
     return content
 
 
