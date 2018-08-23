@@ -28,6 +28,11 @@ logger = Log(fp+'//log', today)
 origin = MongodbOrigin(mongo_db_config)
 mongo_log = origin.get_last_log()
 
+lb_views = ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator',
+                'lb.indexCons', 'jz.secTradeCal', 'lb.secIndustry', 'jz.apiParam',
+                'lb.profitExpress', 'lb.secDividend', 'lb.indexWeightRange',
+                'jz.instrumentInfo', 'lb.secAdjFactor']
+
 
 def loop(func, n=0):
     def wrapper(n=n):
@@ -180,11 +185,6 @@ def update_daily():
 
 
 def update_lb(update_type='add'):
-    lb_views = ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator',
-                'lb.indexCons', 'jz.secTradeCal', 'lb.secIndustry', 'jz.apiParam',
-                'lb.profitExpress', 'lb.secDividend', 'lb.indexWeightRange',
-                'jz.instrumentInfo', 'lb.secAdjFactor']
-
     for view in lb_views:
         db = sqlite_db(fp)
         date_info = db.get_update_info(view)
@@ -265,8 +265,7 @@ def check_date():
 
 if __name__ == '__main__':
     update_lb()
-    update_daily()
-    print(1)
+    #update_daily()
 
 
 '''
