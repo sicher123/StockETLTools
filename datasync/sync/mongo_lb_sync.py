@@ -1,28 +1,16 @@
 import os
 import math
-import numpy as np
-from datetime import datetime, timedelta
 import pathlib
+from datetime import datetime, timedelta
 
 from datasync.log import Log
-from datasync.dataReceiver.hdf5 import DailyDB
 from datasync.dataReceiver.sqlite import sqlite_db
 from datasync.data_origin.mongodb_origin import MongodbOrigin
-from datasync.utils import read_json
+from datasync.utils import get_config
 
-config_path = pathlib.Path(__file__).absolute().parent.parent / "config" / "config.json"
-config = read_json(config_path)
-default_config = {
-    "fp": os.path.join(os.path.expanduser("~"), "Sync","data"),
-    "mongo_db_config": {'addr': '192.168.0.104'},
-    "lb_update_type": "add",
-    "default_start_date": 19990101,
-    "default_future_date": 20200101,
-}
-print(config)
-config = dict(default_config, **config)
-print(config)
+config = get_config(pathlib.Path(__file__).absolute())
 fp = config["fp"]
+lb_views = config["lb_views"]
 mongo_db_config = config["mongo_db_config"]
 lb_update_type = config["lb_update_type"]
 default_start_date = config["default_start_date"]
@@ -33,11 +21,6 @@ yestoday = int(datetime.strftime(datetime.today() - timedelta(days=1), '%Y%m%d')
 logger = Log(os.path.join(fp, "log"), today)
 origin = MongodbOrigin(mongo_db_config)
 mongo_log = origin.get_last_log()
-
-lb_views = ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator',
-                'lb.indexCons', 'jz.secTradeCal', 'lb.secIndustry', 'jz.apiParam',
-                'lb.profitExpress', 'lb.secDividend', 'lb.indexWeightRange',
-                'jz.instrumentInfo', 'lb.secAdjFactor']
 
 
 def loop(func, n=0):
@@ -70,43 +53,7 @@ def get_from_jaqs(props):
 
     dsorigin = DataServiceOrigin(jaqs_config)
     df = dsorigin.read(props=props)
-    df = df.drop(['presettle', 'settle', 'preclose', 'oi'], axis=1)
-    df = df.replace('交易', 1)
-    df = df.replace('停牌', 0)
     return df
-
-
-def h5_sync_one(props, db):
-    view = props['view']
-    print('%s start sync' % (view,))
-    logger.info('%s start update' % (view,))
-    df = origin.read(props)
-
-    if view == 'Stock_D':
-        df['code'] = df['symbol'].apply(lambda x: x.split('.')[0])
-        df['freq'] = '1d'
-        df['vwap'] = df['turnover']/df['volume']
-
-        data = df.loc[:, ['trade_date', 'symbol', 'open']]
-        data = data.pivot(index='trade_date', columns='symbol', values='open')
-        data[~data.isna()] = 1
-        data[data.isna()] = 0
-        db.update_a_file(data, 'trade_status')
-        db.set_attr('trade_status', {'updated_date': props['end_date']})
-        # df = get_from_jaqs(props)
-
-
-    for i in df.columns:
-        data = df.pivot(index='trade_date', columns='symbol', values=i)
-        if i in ['trade_date']:
-            data = data.fillna(method='ffill', axis=1).astype(int)
-        try:
-            db.update_a_file(data, i)
-            db.set_attr(i, {'updated_date': props.get('end_date')})
-            logger.info('%s - %s data has been updated' % (view, i))
-        except Exception as e:
-            pass
-            logger.error('%s - %s update failed ,error as %s' % (view, i, e))
 
 
 def lb_sync_one(props, db, if_exists='append'):
@@ -148,46 +95,6 @@ def dst_upd(props, db):
 
         if '.' in view:
             lb_sync_one(props, db)
-        else:
-            h5_sync_one(props, db)
-
-
-def update_daily():
-    daily_views = ['Stock_D', 'SecDailyIndicator']
-
-    for view in daily_views:
-        db = DailyDB(fp, view)
-        date_info = db.get_update_info()
-        if date_info:
-            print(date_info)
-            start_date = int(date_info)
-
-            # noinspection PyBroadException
-            try:
-                update_flag = mongo_log[view][0]
-                if update_flag <= 0:
-                    logger.info('%s mongodb data not updated today' % (view,))
-                    continue
-                else:
-                    end_date = int(mongo_log.index[0])
-            except Exception:
-                end_date = int(mongo_log.index[0])
-        else:
-            start_date = default_start_date
-            end_date = today
-
-        if start_date == end_date:
-            logger.info('date -- %s ,view -- %s data is the newest' % (start_date, view))
-            continue
-
-        props = {'view': view,
-                 'start_date': start_date,
-                 'end_date': end_date}
-
-        print(view, props)
-
-        # h5_sync_one(props, db)
-        dst_upd(props, db)
 
 
 def update_lb(update_type='add'):
@@ -271,23 +178,3 @@ def check_date():
 
 if __name__ == '__main__':
     update_lb()
-    #update_daily()
-
-
-'''
-def adjfactor_to_hd5(props):
-    db = DailyDB(fp, 'Stock_D')
-    view = 'lb.secAdjFactor'
-    logger.info('%s start update' % (view,))
-    props['view'] = view
-    df = origin.read(props)
-    df = df[df['symbol'].apply(lambda x:x[0] in ('0', '3', '6'))]
-    df = df.pivot_table(index='trade_date', columns='symbol', values='adjust_factor', aggfunc=np.mean)
-    df = df.ffill()
-    try:
-        db.update_a_file(df, 'adjust_factor')
-        db.set_attr('adjust_factor', {'updated_date': props['end_date']})
-        logger.info('%s data has been updated' % (view,))
-    except Exception as e:
-        logger.error('%s update failed ,error as %s' % (view, e))
-'''

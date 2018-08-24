@@ -8,6 +8,8 @@ import os
 import json
 import errno
 import codecs
+import pathlib
+from jaqs_fxdayu.data.dataservice import LocalDataService
 
 def trans_symbol(symbols, dtype='standard'):
     assert dtype in ['standard', 'exchange', 'code'], 'dtype must in [standard, exchange, code]'
@@ -132,6 +134,27 @@ def save_json(serializable, file_name):
     with codecs.open(fn, 'w', encoding='utf-8') as f:
         json.dump(serializable, f, separators=(',\n', ': '))
 
+
+def get_config(_path):
+    default_config = {
+        "fp": os.path.join(os.path.expanduser("~"), "Sync", "data"),
+        "mongo_db_config": {'addr': '192.168.0.104'},
+        "lb_update_type": "add",
+        "default_start_date": 19990101,
+        "default_future_date": 20200101,
+        "lb_views": ['lb.cashFlow', 'lb.income', 'lb.balanceSheet', 'lb.finIndicator',
+                     'lb.indexCons', 'jz.secTradeCal', 'lb.secIndustry', 'jz.apiParam',
+                     'lb.profitExpress', 'lb.secDividend', 'lb.indexWeightRange',
+                     'jz.instrumentInfo', 'lb.secAdjFactor'],
+        "daily_views": ['Stock_D', 'SecDailyIndicator']
+    }
+    config_path = _path.parent.parent / "config" / "config.json"
+    config = read_json(config_path)
+
+    config = dict(default_config, **config)
+    return config
+
+
 def set_predefine(fp, view):
     import os
     import sqlite3
@@ -153,7 +176,11 @@ def set_predefine(fp, view):
     data = data.reset_index(drop=True)
     data.to_sql("help.predefine", conn, if_exists='replace')
 
+
 def run():
     fp = r'D:\data1year'
     view= 'dyfactors'
     set_predefine(fp, view)
+
+if  __name__ == '__main__':
+    get_config()
