@@ -11,26 +11,16 @@ fp = r'C:\Users\xinger\Sync\data'
 logger = Log(fp+'//log', today)
 db_config = {'addr': '192.168.0.104'}
 origin = MongodbOrigin(db_config)
-<<<<<<< HEAD
 view = 'factors'
 
 fields = ['PB']
-=======
-view = 'dyfactors'
-
-fields = origin.conn['fxdayu_factors'].collection_names()
->>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
 db = DailyDB(fp, view)
 exist_fields = db.exist_fields
 
 for f in fields:
     if f not in exist_fields:
         print(f, 'start query')
-<<<<<<< HEAD
         props = {'view': 'factors',
-=======
-        props = {'view': 'fxdayu_factors',
->>>>>>> 38056bc7beec1f0aefb04687e6125abf2ff822ea
                  'start_date': 20140101,
                  'end_date': today,
                  'fields': f}
