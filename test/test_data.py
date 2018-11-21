@@ -2,12 +2,13 @@ import h5py
 import os
 import pandas as pd
 
+
 def get_shape(path,):
     dic1 = {}
     for name in os.listdir(path):
         dic = {}
-        if name == 'adjust_factor.hd5':
-        #if name.endswith('hd5'):
+        #if name == 'adjust_factor.hd5':
+        if name.endswith('hd5'):
             with h5py.File(path + '//%s'%(name)) as file:
                 keys = list(file.keys())
                 try:
@@ -18,7 +19,7 @@ def get_shape(path,):
                 #dic['date_flag'] = file['date_flag'].shape
                 #dic['data'] = file['data'].shape
                 try:
-                    data = pd.DataFrame(index=file['date_flag'][:, -1], columns=file['symbol_flag'][:,-1],data = file['data'][:])
+                    data = pd.DataFrame(index=file['date_flag'][:, -1], columns=file['symbol_flag'][:,-1],data = file['data'][:].astype(str))
                     print(data)
                     #print (file['date_flag'][:,-1])
                     #data = data.dropna(how = 'all')
@@ -33,9 +34,10 @@ def get_shape(path,):
                 #dic1[name] = dic
     #return pd.DataFrame(dic1)
 
+
 class h5View():
     def __init__(self, path, name):
-        file = h5py.File(path + '//%s' % (name, ))
+        file = h5py.File(path + '//%s' % (name, ),'r')
         self.file = file
         keys = list(file.keys())
         try:
@@ -56,7 +58,7 @@ class h5View():
                self.file['date_flag'].shape)
         return self.file
 
-path = r'D:\data\Stock_D'
+path = r'D:\hdf5_data\dbo.ASHAREEODPRICES'
 shape = get_shape(path)
 
 import json

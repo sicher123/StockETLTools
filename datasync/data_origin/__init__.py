@@ -45,13 +45,13 @@ def props_to_sql(props,date_type = 'int'):
             if date_type == 'int':
                 sql += '''AND %s >= %s ''' % (DATE_NAME, v)
             elif date_type == 'datetime':
-                sql += '''AND %s >= cast('%s' as datetime) ''' % (DATE_NAME, v)
+                sql += '''AND %s >= to_date('%s','yyyymmdd') ''' % (DATE_NAME, v)
 
         elif k == 'end_date':
             if date_type == 'int':
-                sql += '''AND %s >= %s ''' % (DATE_NAME, v)
+                sql += '''AND %s <= %s ''' % (DATE_NAME, v)
             elif date_type == 'datetime':
-                sql += '''AND %s >= cast('%s' as datetime) ''' % (DATE_NAME, v)
+                sql += '''AND %s <= to_date('%s','yyyymmdd') ''' % (DATE_NAME, v)
 
         elif ',' in v:
             values = tuple(v.split(','))

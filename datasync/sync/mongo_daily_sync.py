@@ -7,7 +7,7 @@ from datasync.dataReceiver.hdf5 import DailyDB
 from datasync.data_origin.mongodb_origin import MongodbOrigin
 from datasync.utils import get_config
 
-config = get_config(pathlib.Path(__file__).absolute())
+config = get_config(pathlib.Path(__file__).absolute().parent.parent)
 fp = config["fp"]
 
 daily_views = config["daily_views"]

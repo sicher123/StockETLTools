@@ -137,7 +137,7 @@ def save_json(serializable, file_name):
 
 def get_config(_path):
     default_config = {
-        "fp": os.path.join(os.path.expanduser("~"), "Sync", "data"),
+        "fp": os.path.join(_path, "Sync", "data"),
         "mongo_db_config": {'addr': '192.168.0.104'},
         "lb_update_type": "add",
         "default_start_date": 19990101,
@@ -148,10 +148,11 @@ def get_config(_path):
                      'jz.instrumentInfo', 'lb.secAdjFactor'],
         "daily_views": ['Stock_D', 'SecDailyIndicator']
     }
-    config_path = _path.parent.parent / "config" / "config.json"
+    config_path = _path / "config" / "config.json"
+    print (config_path)
     config = read_json(config_path)
-
-    config = dict(default_config, **config)
+    if not config:
+        config = default_config
     return config
 
 

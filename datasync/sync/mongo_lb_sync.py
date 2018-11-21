@@ -8,7 +8,7 @@ from datasync.dataReceiver.sqlite import sqlite_db
 from datasync.data_origin.mongodb_origin import MongodbOrigin
 from datasync.utils import get_config
 
-config = get_config(pathlib.Path(__file__).absolute())
+config = get_config(pathlib.Path(__file__).absolute().parent.parent)
 fp = config["fp"]
 lb_views = config["lb_views"]
 mongo_db_config = config["mongo_db_config"]

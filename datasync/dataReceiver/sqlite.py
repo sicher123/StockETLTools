@@ -14,8 +14,8 @@ today = int(datetime.strftime(datetime.today(), '%Y%m%d'))
 
 
 class sqlite_db(object):
-    def __init__(self, fp):
-        path = fp + '//' + 'data.sqlite'
+    def __init__(self, fp, file_name='data'):
+        path = fp + '//' + '%s.sqlite' % (file_name,)
         self.fp = fp
         self.path = path
         self.conn = sqlite3.connect(path)
@@ -73,8 +73,8 @@ class sqlite_db(object):
             else:
                 self.set_attr(view, today)
 
-    def get_update_info(self, view):
-        sql = '''select updated_date from "attrs" WHERE view = "%s";''' % (view,)
+    def get_update_info(self, view, date_field='trade_date'):
+        sql = '''select max(%s) from "%s";''' % (date_field, view)
         c = self.conn.cursor()
         try:
             c.execute(sql)
