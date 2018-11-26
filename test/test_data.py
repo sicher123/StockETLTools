@@ -2,33 +2,30 @@ import h5py
 import os
 import pandas as pd
 
-def get_shape(path,):
-    dic1 = {}
-    for name in os.listdir(path):
-        dic = {}
-        if name.endswith('hd5'):
-            with h5py.File(path + '//%s'%(name)) as file:
-                keys = list(file.keys())
-                try:
-                    assert keys == ['data', 'symbol_flag', 'date_flag'], (name, keys)
-                except Exception as e:
-                    print(e)
-                #dic['symbol_flag'] = file['symbol_flag'].shape
-                #dic['date_flag'] = file['date_flag'].shape
-                #dic['data'] = file['data'].shape
-                try:
-                    data = pd.DataFrame(index = file['date_flag'][:, -1], columns=file['symbol_flag'][:,-1],data = file['data'][:])
-                    print (data)
-                    #print (file['date_flag'][:,-1])
-                    #data = data.dropna(how = 'all')
-                    #if len(data) == 0:
-                        #logger.error('%s newest data all None'%(name))
-                except Exception as e:
-                    #logger.error('%s newest data all None' % (name))
-                    print ('error',name,e)
-                print(name)
-                #dic1[name] = dic
-    #return pd.DataFrame(dic1)
+def get_shape(path,name):
+    if name.endswith('hd5'):
+        with h5py.File(path + '//%s'%(name)) as file:
+            keys = list(file.keys())
+            try:
+                assert keys == ['data', 'symbol_flag', 'date_flag'], (name, keys)
+            except Exception as e:
+                print(e)
+            #dic['symbol_flag'] = file['symbol_flag'].shape
+            #dic['date_flag'] = file['date_flag'].shape
+            #dic['data'] = file['data'].shape
+            try:
+                data = pd.DataFrame(index = file['date_flag'][:, -1], columns=file['symbol_flag'][:,-1],data = file['data'][:])
+                print (data)
+                #print (file['date_flag'][:,-1])
+                #data = data.dropna(how = 'all')
+                #if len(data) == 0:
+                    #logger.error('%s newest data all None'%(name))
+            except Exception as e:
+                #logger.error('%s newest data all None' % (name))
+                print ('error',name,e)
+            print(name)
+            #dic1[name] = dic
+#return pd.DataFrame(dic1)
 
 class h5View():
     def __init__(self, path, name):

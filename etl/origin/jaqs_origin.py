@@ -1,5 +1,6 @@
 import pandas as pd
-from stockds.origin import DataOrigin
+import math
+from datasync.data_origin import DataOrigin
 from jaqs.data.dataservice import RemoteDataService
 import warnings
 warnings.filterwarnings("ignore")
@@ -44,30 +45,53 @@ class DataServiceOrigin(DataOrigin):
         return list(set(symbol))
 
     def read_lb(self, props):
-        view = props.pop('view')
-        field = props.pop('fields')
-        start_date = props.pop('start_date')
-        end_date = props.pop('end_date')
+        start_date = props.get('start_date')
+        end_date = props.get('end_date')
 
-        if isinstance(start_date,int):
-            _filter = 'start_date=%s&end_date=%s'%(start_date,end_date)
-        else:
-            _filter = ''
+        if props.get('view') == 'lb.indexWeightRange':
+            new_props = []
+            num = math.floor((end_date - start_date) / 10000) + 1
+            for i in range(int(num)):
+                props['start_date'] = start_date + i * 10000
+                if start_date + (i + 1) * 10000 < end_date:
+                    props['end_date'] = start_date + (i + 1) * 10000
+                else:
+                    props['end_date'] = end_date
+                new_props.append(props.copy())
+            props = new_props
 
-        for k, v in props.items():
-            _filter += '&%s=%s'%(k, v)
+        def func(p):
+            view = p.pop('view')
+            field = p.pop('fields')
+            start_date = p.pop('start_date')
+            end_date = p.pop('end_date')
 
-        if field is None:
-            field = ''
+            if isinstance(start_date, int):
+                _filter = 'start_date=%s&end_date=%s'%(start_date, end_date)
+            else:
+                _filter = ''
 
-        df, msg = self.conn.query(
-            view=view,
-            fields=field,
-            filter=_filter,
-            data_format='pandas')
+            for k, v in p.items():
+                if v not in [None, '', ['']]:
+                    _filter += '&%s=%s'%(k, v)
 
-        if msg == "0,":
-            return df
+            if field is None:
+                field = ''
+
+            df, msg = self.conn.query(
+                view=view,
+                fields=field,
+                filter=_filter,
+                data_format='pandas')
+
+            if msg == "0,":
+                return df
+
+        if isinstance(props, dict):
+            res = func(props)
+        elif isinstance(props, list):
+            res = pd.concat([func(i) for i in props])
+        return res
 
     def read(self, props=None, sql=None, limit=1000):
         if '.' in props['view']:
@@ -150,7 +174,6 @@ class DataServiceOrigin(DataOrigin):
             return data
 
         l = []
-        import math
         for i in range(math.ceil(num / limit)):
             n = len(l)
             while True:
@@ -176,7 +199,8 @@ class DataServiceOrigin(DataOrigin):
 def test():
     props = {'start_date': 20180301, 'end_date': 20180501, 'fields': 'adjust_factor', 'view': 'adjust_factor'}
 #    props = {'start_date': 20180301, 'end_date': 20180501, 'fields': 'open_adj,low_adj', 'view': 'adjust'}
-    db_config = {'addr': 'tcp://192.168.0.101:23000', 'user': '1', 'password': '2'}
+    db_config = {'addr': 'tcp://data.quantos.org:8910', 'user': '13243828068',
+                 'password': 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVfdGltZSI6IjE1MTUwNDk5MzI2MDAiLCJpc3MiOiJhdXRoMCIsImlkIjoiMTMyNDM4MjgwNjgifQ.KpmnMkuO7ApTWvBAwgvHwWDkmoasBIdQHl2gQJVmqIA'}
 
     dso = DataServiceOrigin(db_config)
     data = dso.read(props=props)

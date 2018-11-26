@@ -5,6 +5,7 @@ Created on Wed May  9 22:34:50 2018
 @author: xinger
 """
 import os
+from datetime import datetime
 
 
 def trans_symbol(symbols, dtype='standard'):
@@ -63,6 +64,10 @@ def trans_symbol(symbols, dtype='standard'):
         return [func(i) for i in symbols if func(i) != '']
 
 
+def int2datetime(str_time):
+    return datetime.strptime(str_time.format(dir[2:10]),'%Y%m%d %H:%M:%S')
+
+
 def logger(date, path):
     import logging
     logger = logging.getLogger(__name__)
@@ -75,4 +80,20 @@ def logger(date, path):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
+
+
+def check_log(path, _string):
+    res = {}
+    lst = []
+    with open(path, mode='r') as file:
+        for row in list(file):
+            lst.append(row) if _string in row else 1
+    return lst
+
+
+'''
+path = r'C:\\Users\\xinger\Desktop\dyupdater.log'
+_str = 'Update finish'
+info = check_log(path, _str)
+'''
 

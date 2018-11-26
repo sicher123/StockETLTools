@@ -30,3 +30,5 @@ print (time() - start)
 
 for field in ['CON_OR_HISDATE','CON_NP_HISDATE','CON_EPS_HISDATE','ENTRYTIME','UPDATETIME']:
     print (field)
+
+from vnpy.trader.app.ctaStrategy.ctaBarManager import BacktestingEngine

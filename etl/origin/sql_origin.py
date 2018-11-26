@@ -1,6 +1,6 @@
 import pandas as pd
 import cx_Oracle as oracle
-from stockds.origin import DataOrigin, props_to_sql
+from datasync.data_origin import DataOrigin, props_to_sql
 
 
 class MSSqlOrigin(DataOrigin):
@@ -38,27 +38,25 @@ class MSSqlOrigin(DataOrigin):
         return cols
 
 
-class OracleOrigin(DataOrigin):
+class OracleOrigin(object):
     def __init__(self, db_config):
-        super(OracleOrigin, self).__init__(db_config)
         self.conn = None
-        self.connect()
         self.db_config = db_config
+        self.connect()
 
     def connect(self):
+        import cx_Oracle as oracle
         try:
-            #_string = 'bigfish/bigfish@172.16.55.54:1521/ORCL'
-            _string = '%s/%s@%s' % (self.db_config['user'],
-                                    self.db_config['password'],
-                                    self.db_config['addr'])
-
-            self.conn = oracle.connect(_string)
+            #_string = 'bigfish/bigfish@0824@172.16.100.175:1521/orcl'
+            self.conn = oracle.connect(self.db_config['user'],
+                                       self.db_config['password'],
+                                       self.db_config['addr'])
         except:
             raise ValueError('数据库连接失败，请检查配置信息是否正确')
 
-    def read(self, props=None, sql=None):
+    def read(self,props=None, sql=None):
         if sql is None:
-            sql = props_to_sql(props, datetype='datetime')[:-1]
+            sql = props_to_sql(props, date_type='datetime')[:-1]
         data = pd.read_sql(sql, self.conn)
         return data
 
@@ -78,9 +76,9 @@ def test_mssql():
 
 
 def test_oracle():
-    db_config = {'addr': "172.16.55.54:1521/ORCL",
-                 'user': "bigfish",
-                 'password': "bigfish"}
+    db_config = {'addr': "192.168.0.102:1520/xe",
+                 'user': "FXDAYU",
+                 'password': "Xinger520"}
 
     props = {'start_date': 20140801,
              'end_date': 20140906,

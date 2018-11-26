@@ -1,17 +1,18 @@
 import pymongo
+import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
-from stockds.utils import trans_symbol
-from stockds.storage import StorageBase
+from datasync.utils import trans_symbol
+from datasync.data_origin import DataOrigin
 
 
 class NoImplementError(Exception):
     pass
 
 
-class MongodbOrigin(StorageBase):
+class MongodbOrigin(DataOrigin):
     def __init__(self, db_config):
-        super(MongodbOrigin, self).__init__()
+        super(MongodbOrigin, self).__init__(db_config)
         self.conn = None
         self.connect(db_config)
 
@@ -23,7 +24,7 @@ class MongodbOrigin(StorageBase):
             port = 27017
         try:
             self.conn = pymongo.MongoClient(host, int(port))
-        except Exception:
+        except:
             raise ValueError('数据库连接失败，请检查配置信息是否正确')
 
     def get_update_log(self, date=None):
@@ -33,9 +34,10 @@ class MongodbOrigin(StorageBase):
 
         if isinstance(date, int):
             date = datetime.strptime(str(date), '%Y%m%d').date()
+
         str_date = datetime.strftime(date, '%Y%m%d')
 
-        # lb
+        #lb
         cs1 = db['lb_daily'].find({'trade_date': str_date}, {'_id': 0, 'trade_date': 0})
         log1 = pd.DataFrame(list(cs1))
         if len(log1) == 0:
@@ -55,13 +57,12 @@ class MongodbOrigin(StorageBase):
 
         # dailyIndicator
         cs3 = db['dailyIndicator'].find({'trade_date': str_date}, {'_id': 0, 'trade_date': 0})
-        # noinspection PyBroadException
         try:
             log3 = list(cs3)[0]
             condi = [True for i in log3.values() if i == 1.0]
             if True in condi:
                 log['SecDailyIndicator'] = condi.count(True)
-        except Exception:
+        except:
             pass
 
         return log
@@ -78,7 +79,6 @@ class MongodbOrigin(StorageBase):
                 n += 1
 
     def props_to_mongo(self, props):
-        flt = None
         start_date = props.get('start_date')
         end_date = props.get('end_date')
         fields = props.get('fields')
@@ -88,7 +88,7 @@ class MongodbOrigin(StorageBase):
         doc = self.conn[dbname][clname].find_one({})
         exist_fields = list(doc.keys())
 
-        date_names = [i for i in exist_fields if i in ['trade_date', 'datetime', 'report_date', 'in_date']]
+        date_names = [i for i in exist_fields if i in ['trade_date', 'datetime', 'ann_date', 'in_date']]
         if len(date_names) == 1:
             date_name = date_names[0]
             proj = {'_id': 0, date_name: 1}
@@ -121,18 +121,16 @@ class MongodbOrigin(StorageBase):
         is_num_n_string = [(not (i.isalpha() or i.isdigit())) for i in string_list]
 
         if (len(is_num) - is_num.count(True)) <= 2:
-            res = 'trade_date'
+            res = 'symbol'
         elif (len(is_string) - is_string.count(True)) <= 2:
             res = 'fields'
         elif (len(is_num_n_string) - is_num_n_string.count(True)) <= 2:
-            if (len(i_is_string) - i_is_string.count(True)) <= 2:
-                res = 'fields'
-            elif (len(i_is_num) - i_is_num.count(True)) <= 2:
-                res = 'symbol'
-            else:
-                raise ValueError('cant identify')
+            res = 'symbol'
+        elif (len(i_is_string) - i_is_string.count(True)) <= 2:
+            res = 'fields'
         else:
-            raise ValueError()
+            raise ValueError('cant identify')
+
         return res
 
     def read(self, props, is_filter=True):
@@ -225,19 +223,22 @@ class MongodbOrigin(StorageBase):
 
 
 if __name__ == '__main__':
-    db_config_ = {'addr': '192.168.0.104'}
-    origin = MongodbOrigin(db_config_)
+    db_config = {'addr': '192.168.0.104'}
+    origin = MongodbOrigin(db_config)
+
+    props = {'view': 'lb.income',
+             'start_date': 20170101,
+             'end_date': 20180101}
     '''
     props = {'view': 'Stock_D',
              'start_date': 20170101,
              'end_date': 20180101,
              'fields': 'trade_date,symbol,open,high'}
+             
+    props = {'view': 'fxdayu_factors',
+             'start_date': 20170101,
+             'end_date': 20180201,
+             'fields': 'A010001A'}
     '''
-
-    props_ = {'view': 'fxdayu_factors',
-              'start_date': 20170101,
-              'end_date': 20180201,
-              'fields': 'A010001A'}
-
     # data = origin.read_db(props, 'symbol', 'fields')
-    df_ = origin.read(props_)
+    data = origin.read(props)
