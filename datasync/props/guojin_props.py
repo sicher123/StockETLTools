@@ -110,7 +110,9 @@ def config_to_excel():
 
 def read_config(sheet_name, config_path=None):
     if config_path == None:
-        config_path = os.path.abspath(os.path.expanduser('~/Desktop')) + '\\hdf5_docs\\config.xlsx'
+        # config_path = os.path.abspath(os.path.expanduser('~/Desktop')) + '\\hdf5_docs\\config.xlsx'
+		path = os.path.abspath(os.path.join(os.getcwd(), ".."))
+		config_path = path + '\\config.xlsx'
     config = pd.read_excel(config_path, sheet_name=sheet_name)
     config = config.fillna('')
     return config.to_dict()
