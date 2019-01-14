@@ -20,11 +20,10 @@ DataSync是基于Python开发的简化版证券数据ETL工具，项目已接入
 
 #### 2.2.1 下载项目代码 
 
-项目地址: http://gitlab.fxdayu.com:8888/xingetouzi/DataSync  
 在本地打开git命令行，使用以下命令克隆项目代码
 
 ```
-git clone -b dev http://gitlab.fxdayu.com:8888/xingetouzi/DataSync.git
+git clone https://github.com/sicher123/DataSync.git
 ```
 
 #### 2.2.2 安装项目
@@ -74,15 +73,6 @@ Daily_data sheet 存放的是日线配置信息，lb_data sheet存放的是季�
 
 
 ## 3. 项目结构
-
-如有二次开发需求，则需要看本章内容，否则按照第二章配置即可。
-
-二次开发请采用主分支上的代码，开发逻辑更为清晰，下载命令如下：
-
-```
-git clone http://gitlab.fxdayu.com:8888/xingetouzi/DataSync.git
-```
-
 
 
 ### 3.1 config&props
