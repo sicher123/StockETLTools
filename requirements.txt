@@ -1,0 +1,6 @@
+h5py
+pandas
+numpy
+bcolz
+pymongo
+openpyxl
