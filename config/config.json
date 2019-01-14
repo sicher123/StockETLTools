@@ -1,0 +1,28 @@
+{
+    "fp": "./data",
+    "mongo_db_config": {
+        "addr": "192.168.0.104"
+    },
+    "lb_update_type": "add",
+    "default_start_date" :19990101,
+    "default_future_date":20200101,
+    "jaqs_db_config": {
+        "addr": "tcp://192.168.0.104:23000", 
+        "user": "XXX",
+        "password": "XXX",
+    "lb_views": ["lb.cashFlow",
+                  "lb.income",
+                  "lb.balanceSheet",
+                  "lb.finIndicator",
+                  "lb.indexCons",
+                  "jz.secTradeCal",
+                  "lb.secIndustry",
+                  "jz.apiParam",
+                  "lb.profitExpress",
+                  "lb.secDividend",
+                  "lb.indexWeightRange",
+                  "jz.instrumentInfo",
+                  "lb.secAdjFactor"],
+    "daily_views": ["Stock_D",
+                    "SecDailyIndicator"]}
+}

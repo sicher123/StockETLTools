@@ -1,0 +1,3 @@
+
+class LocalFileSYS(object):
+    pass
